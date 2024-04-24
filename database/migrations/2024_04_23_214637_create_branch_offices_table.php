@@ -18,8 +18,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('address');
             $table->string('locality');
-            $table->foreignId('id_country')->constrained('countries');
-            $table->timestamp('email_confirmation')->nullable();
+            $table->foreignId('id_country')->constrained('countries')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

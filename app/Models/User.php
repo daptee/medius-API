@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,9 +19,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'id_type_user',
         'name',
+        'last_name',
+        'dni',
         'email',
         'password',
+        'email_confirmation',
     ];
 
     /**
@@ -28,8 +34,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
+        'id_user_type',
         'password',
-        'remember_token',
     ];
 
     /**
@@ -40,8 +46,28 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'email_confirmation' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public static function getAllDataUser($id)
+    {
+        return User::with(['user_type', 'company', 'branch_office'])->find($id);
+    }
+
+    public function user_type(): HasOne
+    {
+        return $this->hasOne(UserType::class, 'id', 'id_user_type');
+    }
+
+    public function company(): HasOne
+    {
+        return $this->hasOne(Company::class, 'id_user');
+    }
+
+    public function branch_office(): HasOne
+    {
+        return $this->hasOne(BranchOffice::class, 'id_user');
     }
 }
