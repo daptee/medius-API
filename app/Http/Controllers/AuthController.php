@@ -36,15 +36,18 @@ class AuthController extends Controller
             if($user->count() == 0)
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 400);
 
-            if (! $token = JWTAuth::attempt($credentials))
-                return response()->json(['message' => 'Usuario y/o clave no válidos.'], 400);
+            // if (! $token = JWTAuth::attempt($credentials))
+            //     return response()->json(['message' => 'Usuario y/o clave no válidos.'], 400);
+
+            if (! $token = auth()->attempt($credentials)) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
 
         }catch (JWTException $e) {
             return response()->json(['message' => 'No fue posible crear el Token de Autenticación '], 500);
         }
     
-        // Session::put('applocale', $request);
-        return $this->respondWithToken($token, Auth::user()->id);
+        return $this->respondWithToken($token);
     }
 
     // public function login_admin(LoginRequest $request)
@@ -113,15 +116,14 @@ class AuthController extends Controller
         }
     }
 
-    protected function respondWithToken($token,$id){
-        $expire_in = config('jwt.ttl');
-        $data = [ 'user' => User::getAllDataUser($id) ];
+    protected function respondWithToken($token){
+        $data = [ 
+            'access_token' => $token,
+            'user' => User::getAllDataUser(Auth::user()->id)
+        ];
 
         return response()->json([
             'message' => 'Login exitoso.',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => $expire_in * 60,
             'data' => $data
         ]);
     }
