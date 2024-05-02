@@ -18,11 +18,15 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('auth/password-recovery', 'auth_password_recovery');
 });
 
-Route::controller(UserController::class)->group(function () {
-    Route::post('users/plans', 'user_plan');
-});
-
 Route::group(['middleware' => ['auth:api']], function ($router) {
+    // AuthController
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('auth/password-recovery-token', [AuthController::class, 'auth_password_recovery_token']);
+
+    // UserController
+    Route::post('users/plans', [UserController::class, 'user_plan']);
+    Route::post('users/profesional', [UserController::class, 'new_user_profesional']);
+    Route::post('users/profesional/{id}', [UserController::class, 'update_user_profesional']);
+    Route::post('users/update', [UserController::class, 'update']);
+    Route::post('users/profile_picture', [UserController::class, 'profile_picture']);
 });

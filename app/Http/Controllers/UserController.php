@@ -2,16 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NewUserProfesionalRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserPlan;
 use App\Models\UserType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Exception;
 
 class UserController extends Controller
 {
+
+    public function update(Request $request)
+    {
+        $id = Auth::user()->id;
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+            'dni' => [
+                'required',
+                Rule::unique('users')->ignore($id),
+            ],
+            'password' => 'required|string|min:8',
+            'phone' => 'required',
+            'data' => 'required',
+        ]);
+
+        $message = "Error al actualizar usuario";
+
+        try {
+            DB::beginTransaction();
+                $user = User::find($id);
+                $user->update($request->all());
+            DB::commit();
+        } catch (Exception $error) {
+            DB::rollBack();
+            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+        }
+
+        $data = User::getAllDataUser($id);
+        $message = "Usuario actualizado con exitoso";
+        return response(compact("message", "data"));
+    }
+
     public function user_plan(Request $request)
     {
         $request->validate([
@@ -20,7 +64,6 @@ class UserController extends Controller
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 500);
-
 
         $message = "Error al guardar plan";
 
@@ -44,5 +87,110 @@ class UserController extends Controller
         $data = User::getAllDataUser($user->id);
         $message = "Registro de nuevo plan exitoso";
         return response(compact("message", "data"));
+    }
+
+    public function new_user_profesional(NewUserProfesionalRequest $request)
+    {
+        $message = "Error al crear usuario profesional";
+        $data = $request->validated();
+
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 500);
+
+        try {
+            DB::beginTransaction();
+                $new_user = new User($request->all());
+                $new_user->id_user_type = UserType::PROFESIONAL;
+                $new_user->save();
+            DB::commit();
+        } catch (Exception $error) {
+            DB::rollBack();
+            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+        }
+
+        $data = User::getAllDataUser($new_user->id);
+        $message = "Registro de usuario profesional exitoso";
+        return response(compact("message", "data"));
+    }
+
+    public function update_user_profesional(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+            'dni' => [
+                'required',
+                Rule::unique('users')->ignore($id),
+            ],
+            'password' => 'required|string|min:8',
+            'phone' => 'required',
+            'data' => 'required',
+        ]);
+
+        $message = "Error al actualizar usuario profesional";
+
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 500);
+
+        try {
+            DB::beginTransaction();
+                $user = User::find($id);
+                $user->update($request->all());
+            DB::commit();
+        } catch (Exception $error) {
+            DB::rollBack();
+            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+        }
+
+        $data = User::getAllDataUser($id);
+        $message = "Usuario actualizado con exitoso";
+        return response(compact("message", "data"));
+    }
+
+    public function profile_picture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|file|max:2048',
+        ]);
+
+        $user = Auth::user();
+        
+        if($user->profile_picture){
+            $file_path = public_path($user->profile_picture);
+        
+            if (file_exists($file_path))
+                 unlink($file_path);
+        }
+
+        $path = $this->save_image_public_folder($request->profile_picture, "users/profiles/", null);
+        
+        $user->profile_picture = $path;
+        $user->save();
+
+        $message = "Usuario actualizado exitosamente";
+
+        return response(compact("message", "user"));
+    }
+
+    public function save_image_public_folder($file, $path_to_save, $variable_id)
+    {
+        $fileName = Str::random(5) . time() . '.' . $file->extension();
+                        
+        if($variable_id){
+            $file->move(public_path($path_to_save . $variable_id), $fileName);
+            $path = "/" . $path_to_save . $variable_id . "/$fileName";
+        }else{
+            $file->move(public_path($path_to_save), $fileName);
+            $path = "/" . $path_to_save . $fileName;
+        }
+
+        return $path;
     }
 }
