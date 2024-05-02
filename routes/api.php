@@ -13,5 +13,11 @@ Route::controller(AuthController::class)->group(function () {
     // Route::post('login/admin', 'login_admin');
     Route::post('auth/register', 'auth_register');
     Route::post('auth/login', 'auth_login');
+    Route::post('auth/account-recovery', 'auth_account_recovery');
+    Route::post('auth/password-recovery', 'auth_password_recovery');
 });
 
+Route::group(['middleware' => ['auth:api']], function ($router) {
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('auth/password-recovery-token', [AuthController::class, 'auth_password_recovery_token']);
+});
