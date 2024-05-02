@@ -54,7 +54,7 @@ class User extends Authenticatable implements JWTSubject
 
     public static function getAllDataUser($id)
     {
-        return User::with(['user_type', 'company', 'branch_office'])->find($id);
+        return User::with(['user_type', 'company', 'branch_office', 'plan'])->find($id);
     }
 
     public function user_type(): HasOne
@@ -70,6 +70,11 @@ class User extends Authenticatable implements JWTSubject
     public function branch_office(): HasOne
     {
         return $this->hasOne(BranchOffice::class, 'id_user');
+    }
+
+    public function plan(): HasOne
+    {
+        return $this->hasOne(Plan::class, 'id', 'id_plan');
     }
 
     /**
