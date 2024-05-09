@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Mail\RecoverPasswordMailable;
 use App\Mail\WelcomeUserMailable;
+use App\Models\Audith;
 use App\Models\BranchOffice;
 use App\Models\Company;
 use App\Models\Country;
@@ -58,11 +59,16 @@ class AuthController extends Controller
                 // CHEQUAR CON SEBA: COUNTRY & LOCALITY ID / PROVINCE
                 $new_branch_office->id_country = Country::where('name', $data['branch_office']['country'])->first()->id ?? null;
                 $new_branch_office->save();
+    
+                Audith::new($new_user->id, "Registro de usuario", $request->data_audith, 200);
             DB::commit();
         } catch (Exception $error) {
             DB::rollBack();
+            Audith::new($new_user->id, "Registro de usuario", $request->data_audith, 500);
+            Log::debug(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()]);
             return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
         }
+
 
         if($new_user){
             try {
@@ -82,17 +88,21 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
         try{
-            $user = User::where('email' , $credentials['email'])->get();
+            $user = User::where('email' , $credentials['email'])->first();
 
-            if($user->count() == 0)
+            if(!$user)
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 400);
 
             if (! $token = auth()->attempt($credentials)) {
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 401);
             }
 
+            Audith::new($user->id, "Login de usuario", $request->data_audith ?? null, 200);
+
         }catch (Exception $e) {
-            return response()->json(['message' => 'No fue posible crear el Token de Autenticación '], 500);
+            Audith::new($user->id, "Login de usuario", $request->data_audith ?? null, 500);
+            Log::debug(["message" => "No fue posible crear el Token de Autenticación.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response()->json(['message' => 'No fue posible crear el Token de Autenticación.'], 500);
         }
     
         return $this->respondWithToken($token);

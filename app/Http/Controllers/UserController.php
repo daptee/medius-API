@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NewUserPatientRequest;
 use App\Http\Requests\NewUserProfesionalRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -12,9 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    public $model = User::class;
+    public $s = "usuario";
+    public $sp = "usuarios";
+    public $ss = "usuario/s";
+    public $v = "o"; 
+    public $pr = "el"; 
+    public $prp = "los";
 
     public function update(Request $request)
     {
@@ -192,5 +201,63 @@ class UserController extends Controller
         }
 
         return $path;
+    }
+
+    public function get_professionals()
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 500);
+
+        $message = "Error al obtener registros";
+        $data = null;
+        try {
+            $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function new_user_patient(NewUserPatientRequest $request)
+    {
+        $message = "Error al crear usuario paciente";
+        $data = $request->validated();
+
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+            return response(["message" => "Usuario invalido"], 500);
+
+        try {
+            DB::beginTransaction();
+                $new_user = new User($request->all());
+                $new_user->id_user_type = UserType::PACIENTE;
+                $new_user->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = User::getAllDataUser($new_user->id);
+        $message = "Registro de usuario paciente exitoso";
+        return response(compact("message", "data"));
+    }
+
+    public function get_patients()
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+            return response(["message" => "Usuario invalido"], 500);
+
+        $message = "Error al obtener registros";
+        $data = null;
+        try {
+            $data = $this->model::where('id_user_type', UserType::PACIENTE)->with($this->model::DATA_WITH)->get();
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
     }
 }
