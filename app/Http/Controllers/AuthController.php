@@ -60,13 +60,13 @@ class AuthController extends Controller
                 $new_branch_office->id_country = Country::where('name', $data['branch_office']['country'])->first()->id ?? null;
                 $new_branch_office->save();
     
-                Audith::new($new_user->id, "Registro de usuario", $request->data_audith, 200);
+                Audith::new($new_user->id, "Registro de usuario", $data['user'], 200, null);
             DB::commit();
-        } catch (Exception $error) {
+        } catch (Exception $e) {
             DB::rollBack();
-            Audith::new($new_user->id, "Registro de usuario", $request->data_audith, 500);
-            Log::debug(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()]);
-            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+            Audith::new($new_user->id, "Registro de usuario", $data['user'], 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
 
@@ -97,10 +97,10 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 401);
             }
 
-            Audith::new($user->id, "Login de usuario", $request->data_audith ?? null, 200);
+            Audith::new($user->id, "Login de usuario", $credentials['email'], 200, null);
 
         }catch (Exception $e) {
-            Audith::new($user->id, "Login de usuario", $request->data_audith ?? null, 500);
+            Audith::new($user->id, "Login de usuario", $credentials['email'], 500, $e->getMessage());
             Log::debug(["message" => "No fue posible crear el Token de Autenticación.", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response()->json(['message' => 'No fue posible crear el Token de Autenticación.'], 500);
         }
@@ -119,12 +119,13 @@ class AuthController extends Controller
         if(!$user)
             return response()->json(['message' => 'El correo ingresado no fue encontrado.'], 400);
 
-        return new RecoverPasswordMailable($user);
-
+        // return new RecoverPasswordMailable($user);
         try {
             Mail::to($user->email)->send(new RecoverPasswordMailable($user));
-        } catch (Exception $error) {
-            return response(["error" => $error->getMessage()], 500);
+            Audith::new($user->id, "Recupero de contraseña", $request->email, 200, null);
+        } catch (Exception $e) {
+            Audith::new($user->id, "Recupero de contraseña", $request->email, 500, $e->getMessage());
+            return response(["error" => $e->getMessage()], 500);
         }
         
         return response()->json(['message' => 'Correo enviado con exito.'], 200);
@@ -150,9 +151,11 @@ class AuthController extends Controller
                 $user->password = $request->password;
                 $user->save();
             
+                Audith::new($user->id, "Cambio de contraseña", $request->email, 200, null);
             DB::commit();
         } catch (DecryptException $e) {
             DB::rollBack();
+            Audith::new($user->id, "Cambio de contraseña", $request->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al realizar el decrypt / actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
         }
 
@@ -178,9 +181,11 @@ class AuthController extends Controller
                 $user->password = $request->password;
                 $user->save();
             
+                Audith::new($user->id, "Cambio de contraseña", $user->email, 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
+            Audith::new($user->id, "Cambio de contraseña", $user->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
         }
 
@@ -189,11 +194,15 @@ class AuthController extends Controller
 
     public function logout()
     {
+        $email = Auth::user()->email;
+        $user_id = Auth::user()->id; 
         try{
             auth()->logout();
 
+            Audith::new($user_id, "Logout", $email, 200, null);
             return response()->json(['message' => 'Logout exitoso.']);
         }catch (Exception $e) {
+            Audith::new($user_id, "Logout", $email, 500, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\NewUserPatientRequest;
 use App\Http\Requests\NewUserProfesionalRequest;
+use App\Models\Audith;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserPlan;
@@ -54,10 +55,13 @@ class UserController extends Controller
             DB::beginTransaction();
                 $user = User::find($id);
                 $user->update($request->all());
+
+                Audith::new($id, "Actualización de usuario", $request->all(), 200, null);
             DB::commit();
-        } catch (Exception $error) {
+        } catch (Exception $e) {
             DB::rollBack();
-            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+            Audith::new($id, "Actualización de usuario", $request->all(), 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
         $data = User::getAllDataUser($id);
@@ -86,10 +90,12 @@ class UserController extends Controller
                 $user_plan->id_user = $user->id;
                 $user_plan->id_plan = $request->id_plan;
                 $user_plan->save();
+    
+                Audith::new(Auth::user()->id, "Asignación de plan a usuario", $request->all(), 200, null);
             DB::commit();
-
         } catch (Exception $e) {
             DB::rollBack();
+            Audith::new(Auth::user()->id, "Asignación de plan a usuario", $request->all(), 500, $e->getMessage());
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -111,10 +117,13 @@ class UserController extends Controller
                 $new_user = new User($request->all());
                 $new_user->id_user_type = UserType::PROFESIONAL;
                 $new_user->save();
+
+                Audith::new($new_user->id, "Nuevo usuario profesional", $request->all(), 200, null);
             DB::commit();
-        } catch (Exception $error) {
+        } catch (Exception $e) {
             DB::rollBack();
-            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+            Audith::new(null, "Nuevo usuario profesional", $request->all(), 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
         $data = User::getAllDataUser($new_user->id);
@@ -152,10 +161,13 @@ class UserController extends Controller
             DB::beginTransaction();
                 $user = User::find($id);
                 $user->update($request->all());
+
+                Audith::new($id, "Actualización usuario profesional", $request->all(), 200, null);
             DB::commit();
-        } catch (Exception $error) {
+        } catch (Exception $e) {
             DB::rollBack();
-            return response(["message" => $message, "error" => $error->getMessage(), "line" => $error->getLine()], 500);
+            Audith::new($id, "Actualización usuario profesional", $request->all(), 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
         $data = User::getAllDataUser($id);
@@ -182,6 +194,8 @@ class UserController extends Controller
         
         $user->profile_picture = $path;
         $user->save();
+
+        Audith::new($user->id, "Carga foto de perfil", null, 200, null);
 
         $message = "Usuario actualizado exitosamente";
 
@@ -212,8 +226,10 @@ class UserController extends Controller
         $data = null;
         try {
             $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
+            Audith::new(Auth::user()->id, "Listado de profesionales", null, 200, null);
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            Audith::new(Auth::user()->id, "Listado de profesionales", null, 500, $e->getMessage());
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -233,9 +249,12 @@ class UserController extends Controller
                 $new_user = new User($request->all());
                 $new_user->id_user_type = UserType::PACIENTE;
                 $new_user->save();
+
+                Audith::new($new_user->id, "Nuevo usuario paciente", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
+            Audith::new(null, "Nuevo usuario paciente", $request->all(), 500, $e->getMessage());
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -253,7 +272,9 @@ class UserController extends Controller
         $data = null;
         try {
             $data = $this->model::where('id_user_type', UserType::PACIENTE)->with($this->model::DATA_WITH)->get();
+            Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
         } catch (Exception $e) {
+            Audith::new(Auth::user()->id, "Listado de pacientes", null, 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
