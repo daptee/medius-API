@@ -76,7 +76,7 @@ class UserController extends Controller
         ]);
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al guardar plan";
 
@@ -110,7 +110,7 @@ class UserController extends Controller
         $data = $request->validated();
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         try {
             DB::beginTransaction();
@@ -155,7 +155,7 @@ class UserController extends Controller
         $message = "Error al actualizar usuario profesional";
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         try {
             DB::beginTransaction();
@@ -220,7 +220,7 @@ class UserController extends Controller
     public function get_professionals()
     {
         if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al obtener registros";
         $data = null;
@@ -242,7 +242,7 @@ class UserController extends Controller
         $data = $request->validated();
 
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         try {
             DB::beginTransaction();
@@ -263,10 +263,59 @@ class UserController extends Controller
         return response(compact("message", "data"));
     }
 
+    public function update_user_patient(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+            'dni' => [
+                'required',
+                Rule::unique('users')->ignore($id),
+            ],
+            'password' => 'required|string|min:8',
+            'phone' => 'required',
+            'data' => 'required',
+        ]);
+
+        $message = "Error al actualizar usuario paciente";
+
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $user = User::find($id);
+        
+        if($user->id_user_type != UserType::PACIENTE)
+            return response(["message" => "El usuario seleccionado no es un Paciente"], 400);
+
+        try {
+            DB::beginTransaction();
+
+                $user->update($request->all());
+
+                Audith::new($id, "Actualización usuario paciente", $request->all(), 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new($id, "Actualización usuario paciente", $request->all(), 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = User::getAllDataUser($id);
+        $message = "Usuario actualizado con exitoso";
+        return response(compact("message", "data"));
+    }
+
     public function get_patients()
     {
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
-            return response(["message" => "Usuario invalido"], 500);
+            return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al obtener registros";
         $data = null;
