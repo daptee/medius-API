@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\Route;
 //     dd($user);
 // });
 
+Route::get('/countries', function () {
+    $countries = App\Models\Country::with('provinces')->get();
+    return response(["data" => $countries]);
+});
+
+Route::get('/provinces', function () {
+    $provinces = App\Models\Province::with('country')->get();
+    return response(["data" => $provinces]);
+});
+
 Route::controller(AuthController::class)->group(function () {
     // Route::post('login/admin', 'login_admin');
     Route::post('auth/register', 'auth_register');
@@ -38,5 +48,4 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     // PatientController
     Route::post('patients/files', [PatientController::class, 'patient_files']);
     Route::post('patients/delete/files', [PatientController::class, 'delete_patient_files']);
-
 });

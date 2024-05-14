@@ -55,9 +55,7 @@ class AuthController extends Controller
 
                 $new_branch_office = new BranchOffice($data['branch_office']);
                 $new_branch_office->id_user = $new_user->id;
-
-                // CHEQUAR CON SEBA: COUNTRY & LOCALITY ID / PROVINCE
-                $new_branch_office->id_country = Country::where('name', $data['branch_office']['country'])->first()->id ?? null;
+                $new_branch_office->id_province = $data['branch_office']['id_province'];
                 $new_branch_office->save();
     
                 Audith::new($new_user->id, "Registro de usuario", $data['user'], 200, null);
@@ -125,7 +123,8 @@ class AuthController extends Controller
             Audith::new($user->id, "Recupero de contraseña", $request->email, 200, null);
         } catch (Exception $e) {
             Audith::new($user->id, "Recupero de contraseña", $request->email, 500, $e->getMessage());
-            return response(["error" => $e->getMessage()], 500);
+            Log::debug(["message" => "Error en recupero de contraseña", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => "Error en recupero de contraseña", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
         
         return response()->json(['message' => 'Correo enviado con exito.'], 200);
@@ -157,6 +156,7 @@ class AuthController extends Controller
             DB::rollBack();
             Audith::new($user->id, "Cambio de contraseña", $request->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al realizar el decrypt / actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => "Error en recupero de contraseña", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
         return response()->json(['message' => 'Contraseña actualizada con exito.'], 200);
@@ -187,6 +187,7 @@ class AuthController extends Controller
             DB::rollBack();
             Audith::new($user->id, "Cambio de contraseña", $user->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => "Error al actualizar contraseña", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
         return response()->json(['message' => 'Contraseña actualizada con exito.'], 200);
@@ -203,7 +204,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Logout exitoso.']);
         }catch (Exception $e) {
             Audith::new($user_id, "Logout", $email, 500, $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response(["message" => "Error al realizar logout", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
     }
 

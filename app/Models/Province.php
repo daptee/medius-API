@@ -6,21 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class BranchOffice extends Model
+class Province extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'id_user',
+        'id_country',
         'name',
-        'phone',
-        'address',
-        'locality',
-        'id_province',
     ];
 
-    public function province(): HasOne
+    protected $hidden = ['id_country', 'created_at', 'updated_at'];
+
+    public function country(): HasOne
     {
-        return $this->hasOne(Province::class, 'id', 'id_province');
+        return $this->hasOne(Country::class, 'id', 'id_country');
     }
 }

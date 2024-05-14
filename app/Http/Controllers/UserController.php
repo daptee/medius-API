@@ -61,6 +61,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new($id, "Actualización de usuario", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -96,6 +97,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new(Auth::user()->id, "Asignación de plan a usuario", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -123,6 +125,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new(null, "Nuevo usuario profesional", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -167,6 +170,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new($id, "Actualización usuario profesional", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -230,6 +234,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             Audith::new(Auth::user()->id, "Listado de profesionales", null, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -255,6 +260,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new(null, "Nuevo usuario paciente", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
@@ -304,6 +310,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Audith::new($id, "Actualización usuario paciente", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 

@@ -37,7 +37,7 @@ class RegisterRequest extends FormRequest
             'branch_office.phone' => 'required|max:255',
             'branch_office.address' => 'required|string|max:255',
             'branch_office.locality' => 'required|string|max:255',
-            'branch_office.country' => 'required|string|max:255',
+            'branch_office.id_province' => 'required',
         ];
     }
 

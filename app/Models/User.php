@@ -54,7 +54,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH = ['user_type', 'company', 'branch_office', 'plan', 'files'];
+    const DATA_WITH = ['user_type', 'company', 'branch_office.province.country', 'plan', 'files'];
 
     public static function getAllDataUser($id)
     {
