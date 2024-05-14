@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +34,9 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::post('users/patient', [UserController::class, 'new_user_patient']);
     Route::post('users/patient/{id}', [UserController::class, 'update_user_patient']);
     Route::get('users/patients', [UserController::class, 'get_patients']);
+
+    // PatientController
+    Route::post('patients/files', [PatientController::class, 'patient_files']);
+    Route::post('patients/delete/files', [PatientController::class, 'delete_patient_files']);
+
 });

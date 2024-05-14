@@ -54,7 +54,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH = ['user_type', 'company', 'branch_office', 'plan'];
+    const DATA_WITH = ['user_type', 'company', 'branch_office', 'plan', 'files'];
 
     public static function getAllDataUser($id)
     {
@@ -81,6 +81,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Plan::class, 'id', 'id_plan');
     }
 
+    public function files(): HasMany
+    {
+        return $this->hasMany(PatientFile::class, 'id_patient');
+    }
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
