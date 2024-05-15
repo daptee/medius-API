@@ -133,7 +133,7 @@ class AuthController extends Controller
     public function auth_password_recovery(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email' => 'required',
             'password' => 'required',
         ]);
 

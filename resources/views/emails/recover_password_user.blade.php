@@ -8,7 +8,7 @@
 </head>
 <body>
     <p style="white-space: pre-line">
-        Se ha solicitado la recuperacion de contraseña de su cuenta de Medius. Si usted no fue quien la realizo, por favor ingrese y modifique su contraseña, ya que alguien mas ha ingresado en su cuenta.
+        Se ha solicitado la recuperación de contraseña de su cuenta de Medius. Si usted no fue quien la realizo, por favor ingrese y modifique su contraseña, ya que alguien mas ha ingresado en su cuenta.
 
         En caso de que haya sido usted, le pedimos por favor ingrese al siguiente link para recuperar sus datos:
 
