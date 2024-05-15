@@ -12,7 +12,7 @@
 
         En caso de que haya sido usted, le pedimos por favor ingrese al siguiente link para recuperar sus datos:
 
-        {{ Request::getSchemeAndHttpHost() }}/recuperacion-cuenta/{{ Crypt::encrypt($user->email) }}
+        {{ config('services.url_front') }}/generacion-password?{{ Crypt::encrypt($user->email) }}
 
         Muchas gracias.
 

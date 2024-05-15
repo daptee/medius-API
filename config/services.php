@@ -14,6 +14,8 @@ return [
     |
     */
 
+    'url_front' => env('URL_FRONT'),
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
