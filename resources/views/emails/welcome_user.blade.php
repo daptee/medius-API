@@ -14,7 +14,7 @@
 
         Por favor, para confirmar tu cuenta te pedimos ingreses al siguiente link:
 
-        {{ Request::getSchemeAndHttpHost() }}/confirmacion-cuenta/{{ Crypt::encrypt($user->email) }}
+        {{ config('services.url_front') }}/confirmacion-cuenta/{{ Crypt::encrypt($user->email) }}
 
         Ante cualquier duda podes escribirnos a ayuda@medius.com
         Muchas gracias!
