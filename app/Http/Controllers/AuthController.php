@@ -22,6 +22,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use stdClass;
 
 class AuthController extends Controller
 {
@@ -210,9 +212,16 @@ class AuthController extends Controller
 
     protected function respondWithToken($token)
     {
+        // $user = JWTAuth::user();
+
+        // $user_response = new stdClass();
+        // $user_response->name = $user->name;
+        // $user_response->last_name = $user->last_name;
+        // $user_response->user_type = $user->user_type;
+
         $data = [ 
             'access_token' => $token,
-            'user' => User::getAllDataUser(Auth::user()->id)
+            // 'user' => $user_response
         ];
 
         return response()->json([
