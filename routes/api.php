@@ -21,6 +21,11 @@ Route::get('/provinces', function () {
     return response(["data" => $provinces]);
 });
 
+Route::get('/specialties', function () {
+    $specialties = App\Models\Specialty::get();
+    return response(["data" => $specialties]);
+});
+
 Route::controller(AuthController::class)->group(function () {
     // Route::post('login/admin', 'login_admin');
     Route::post('auth/register', 'auth_register');
