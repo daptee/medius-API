@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NewUserPatientRequest;
+use App\Mail\WelcomeUserMailable;
 use App\Models\Audith;
 use App\Models\PatientFile;
 use App\Models\User;
@@ -12,7 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class PatientController extends Controller
 {
@@ -36,6 +39,7 @@ class PatientController extends Controller
         try {
             DB::beginTransaction();
                 $new_user = new User($request->all());
+                $new_user->password = Str::random(10);
                 $new_user->id_user_type = UserType::PACIENTE;
                 $new_user->save();
 
@@ -46,6 +50,15 @@ class PatientController extends Controller
             Audith::new(null, "Nuevo usuario paciente", $request->all(), 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        if($new_user){
+            try {
+                Mail::to($new_user->email)->send(new WelcomeUserMailable($new_user));
+            } catch (Exception $error) {
+                Log::debug(["message" => "Error al enviar mail de bienvenida.", "error" => $error->getMessage(), "line" => $error->getLine()]);
+                // Retornamos que no se pudo enviar el mail o no hace falta solo queda en el log?
+            }
         }
 
         $data = User::getAllDataUser($new_user->id);
@@ -113,7 +126,7 @@ class PatientController extends Controller
         try {
             // $data = $this->model::where('id_user_type', UserType::PACIENTE)->with($this->model::DATA_WITH)->get();
             $data = $this->model::with(['status'])
-                    ->select(['name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
                     ->where('id_user_type', UserType::PACIENTE)
                     ->get();
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
