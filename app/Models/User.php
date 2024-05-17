@@ -20,7 +20,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'id_type_user',
+        'id_user_type',
         'name',
         'last_name',
         'dni',
@@ -28,6 +28,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'email_confirmation',
         'data',
+        'id_user_status',
     ];
 
     /**
@@ -54,7 +55,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH = ['user_type', 'company', 'branch_office.province.country', 'plan', 'files'];
+    const DATA_WITH = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files'];
 
     public static function getAllDataUser($id)
     {
@@ -84,6 +85,11 @@ class User extends Authenticatable implements JWTSubject
     public function files(): HasMany
     {
         return $this->hasMany(PatientFile::class, 'id_patient');
+    }
+
+    public function status(): HasOne
+    {
+        return $this->hasOne(UserStatus::class, 'id', 'id_user_status');
     }
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
