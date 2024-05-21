@@ -180,7 +180,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = User::getAllDataUserProfessional($request->id_professional);
+        $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $request->id_professional)->get();
         $message = "Carga de horarios exitosa";
         return response(compact("message", "data"));
     }
@@ -250,7 +250,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = User::getAllDataUserProfessional($request->id_professional);
+        $data = ProfessionalSpecialDate::where('id_professional', $request->id_professional)->get();
         $message = "Carga de fechas especiales exitosa";
         return response(compact("message", "data"));
     }
