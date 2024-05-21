@@ -51,9 +51,15 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/patients', [PatientController::class, 'get_patients']);
     Route::post('patients/files', [PatientController::class, 'patient_files']);
     Route::post('patients/delete/files', [PatientController::class, 'delete_patient_files']);
+    Route::get('users/patient/{id}', [PatientController::class, 'get_patient']);
 
     // ProfessionalController
     Route::post('users/profesional', [ProfessionalController::class, 'new_user_profesional']);
     Route::post('users/profesional/{id}', [ProfessionalController::class, 'update_user_profesional']);
     Route::get('users/professionals', [ProfessionalController::class, 'get_professionals']);
+    Route::post('users/professional/schedules', [ProfessionalController::class, 'professional_schedules']);
+    Route::get('users/professional/schedules/{id_professional}', [ProfessionalController::class, 'get_professional_schedules']);
+    Route::get('users/professional/{id}', [ProfessionalController::class, 'get_professional']);
+    Route::post('users/professional/special_dates', [ProfessionalController::class, 'professional_special_dates']);
+    Route::get('users/professional/special_dates/{id_professional}', [ProfessionalController::class, 'get_professional_special_dates']);
 });

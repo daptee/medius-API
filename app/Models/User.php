@@ -55,11 +55,25 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files'];
+    const DATA_WITH = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files', 'schedules.rest_hours'];
 
     public static function getAllDataUser($id)
     {
         return User::with(User::DATA_WITH)->find($id);
+    }
+
+    public static function getAllDataUserProfessional($id)
+    {
+        return User::with(['status'])
+                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                ->find($id);
+    }
+
+    public static function getAllDataUserPatient($id)
+    {
+        return User::with(['status'])
+                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                ->find($id);
     }
 
     public function user_type(): HasOne
@@ -91,6 +105,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(UserStatus::class, 'id', 'id_user_status');
     }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(ProfessionalSchedule::class, 'id_professional');
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

@@ -222,4 +222,15 @@ class PatientController extends Controller
         $message = "Eliminación de archivos exitoso";
         return response(compact("message", "data"));
     }
+
+    public function get_patient($id_patient)
+    {
+        $user = User::find($id_patient);
+        if($user->id_user_type != UserType::PACIENTE)
+            return response(["message" => "id patient invalido"], 400);
+
+        $data = User::getAllDataUserPatient($id_patient);
+
+        return response(compact("data"));
+    }
 }
