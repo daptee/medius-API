@@ -217,7 +217,6 @@ class ProfessionalController extends Controller
     {
         $request->validate([
             'id_professional' => 'required',
-            'special_dates' => 'required'
         ]);
 
         $message = "Error al cargar fechas especiales";
@@ -233,13 +232,17 @@ class ProfessionalController extends Controller
             DB::beginTransaction();
                 $this->deleteSpecialDateProfessional($request->id_professional);
 
-                foreach ($request->special_dates as $special_date) {
-                    $professional_special_date = new ProfessionalSpecialDate($special_date);
-                    $professional_special_date->id_professional = $request->id_professional;
-                    $professional_special_date->save();
+                if($request->special_dates){
+                    
+                    foreach ($request->special_dates as $special_date) {
+                        $professional_special_date = new ProfessionalSpecialDate($special_date);
+                        $professional_special_date->id_professional = $request->id_professional;
+                        $professional_special_date->save();
+                    }
+
+                    Audith::new(Auth::user()->id, "Carga de fechas especiales usuario profesional", $request->all(), 200, null);
                 }
 
-                Audith::new(Auth::user()->id, "Carga de fechas especiales usuario profesional", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
