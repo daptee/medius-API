@@ -111,21 +111,40 @@ class UserController extends Controller
             'profile_picture' => 'required|file|max:2048',
         ]);
 
-        $user = Auth::user();
+        $message = "Error al cargar foto de perfil";
+        $user = null;
         
-        if($user->profile_picture){
-            $file_path = public_path($user->profile_picture);
-        
-            if (file_exists($file_path))
-                 unlink($file_path);
+        try {
+            DB::beginTransaction();
+            if($request->id_user){
+                $user = User::find($request->id_user);
+                if(!$user){
+                    return response(["message" => "Usuario invalido"], 400);
+                }
+            }else{
+                $user = Auth::user();
+            }
+            
+            if($user->profile_picture){
+                $file_path = public_path($user->profile_picture);
+            
+                if (file_exists($file_path))
+                    unlink($file_path);
+            }
+
+            $path = $this->save_image_public_folder($request->profile_picture, "users/profiles/", null);
+            
+            $user->profile_picture = $path;
+            $user->save();
+
+            Audith::new($user->id, "Carga foto de perfil", null, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new($user->id, "Carga foto de perfil", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
-
-        $path = $this->save_image_public_folder($request->profile_picture, "users/profiles/", null);
-        
-        $user->profile_picture = $path;
-        $user->save();
-
-        Audith::new($user->id, "Carga foto de perfil", null, 200, null);
 
         $message = "Usuario actualizado exitosamente";
 
