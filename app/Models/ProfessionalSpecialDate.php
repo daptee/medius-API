@@ -13,6 +13,7 @@ class ProfessionalSpecialDate extends Model
 
     protected $fillable = [
         'id_professional',
+        'complete_day',
         'date',
         'start_time',
         'end_time',
