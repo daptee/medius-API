@@ -61,7 +61,7 @@ class PatientController extends Controller
             }
         }
 
-        $data = User::getAllDataUser($new_user->id);
+        $data = User::getAllDataUserPatient($new_user->id);
         $message = "Registro de usuario paciente exitoso";
         return response(compact("message", "data"));
     }
@@ -111,7 +111,7 @@ class PatientController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = User::getAllDataUser($id);
+        $data = User::getAllDataUserPatient($id);
         $message = "Usuario actualizado con exitoso";
         return response(compact("message", "data"));
     }
@@ -126,7 +126,7 @@ class PatientController extends Controller
         try {
             // $data = $this->model::where('id_user_type', UserType::PACIENTE)->with($this->model::DATA_WITH)->get();
             $data = $this->model::with(['status'])
-                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PACIENTE)
                     ->get();
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
@@ -177,7 +177,7 @@ class PatientController extends Controller
             return response(["message" => "Error al cargar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = User::getAllDataUser($user->id);
+        $data = User::getAllDataUserPatient($user->id);
         $message = "Carga de archivos exitoso";
         return response(compact("message", "data"));
     }  
@@ -218,7 +218,7 @@ class PatientController extends Controller
             return response(["message" => "Error al eliminar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = User::getAllDataUser($user_id);
+        $data = User::getAllDataUserPatient($user_id);
         $message = "Eliminación de archivos exitoso";
         return response(compact("message", "data"));
     }

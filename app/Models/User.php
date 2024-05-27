@@ -65,14 +65,14 @@ class User extends Authenticatable implements JWTSubject
     public static function getAllDataUserProfessional($id)
     {
         return User::with(['status'])
-                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                 ->find($id);
     }
 
     public static function getAllDataUserPatient($id)
     {
         return User::with(['status'])
-                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                 ->find($id);
     }
 

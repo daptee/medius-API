@@ -63,7 +63,7 @@ class ProfessionalController extends Controller
             }
         }
 
-        $data = User::getAllDataUser($new_user->id);
+        $data = User::getAllDataUserProfessional($new_user->id);
         $message = "Registro de usuario profesional exitoso";
         return response(compact("message", "data"));
     }
@@ -106,7 +106,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = User::getAllDataUser($id);
+        $data = User::getAllDataUserProfessional($id);
         $message = "Usuario actualizado con exitoso";
         return response(compact("message", "data"));
     }
@@ -120,7 +120,7 @@ class ProfessionalController extends Controller
         $data = null;
         try {
             $data = $this->model::with(['status'])
-                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'created_at'])
+                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PROFESIONAL)
                     ->get();
             // $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
