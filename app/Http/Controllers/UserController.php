@@ -178,4 +178,14 @@ class UserController extends Controller
         return $path;
     }
 
+    public function show()
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $data = User::getAllDataUser(Auth::user()->id);
+
+        return response(compact("data"));
+    }
+
 }
