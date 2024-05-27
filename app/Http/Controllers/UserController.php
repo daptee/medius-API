@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\NewUserProfesionalRequest;
 use App\Models\Audith;
+use App\Models\BranchOffice;
+use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserPlan;
@@ -54,6 +56,16 @@ class UserController extends Controller
             DB::beginTransaction();
                 $user = User::find($id);
                 $user->update($request->all());
+
+                if(isset($request->company)){
+                    $company = Company::where('id_user', $id)->first();
+                    $company->update($request->company);
+                }
+
+                if(isset($request->branch_office)){
+                    $branch_office = BranchOffice::where('id_user', $id)->first();
+                    $branch_office->update($request->branch_office);
+                }
 
                 Audith::new($id, "Actualización de usuario", $request->all(), 200, null);
             DB::commit();
