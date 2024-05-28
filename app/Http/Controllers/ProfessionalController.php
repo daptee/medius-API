@@ -89,7 +89,7 @@ class ProfessionalController extends Controller
 
         $message = "Error al actualizar usuario profesional";
 
-        if(Auth::user()->id_user_type != UserType::ADMIN)
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
 
         try {
@@ -144,12 +144,19 @@ class ProfessionalController extends Controller
 
         $message = "Error al cargar horarios de profesional";
         
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+            return response(["message" => "Usuario invalido"], 400);
+        
         $user_request = User::find($request->id_professional);
         if($user_request->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "id professional invalido"], 400);
 
-        if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 400);
+        if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+
+            if(Auth::user()->id != $request->id_professional)
+                return response(["message" => "Accion invalida"], 400);
+
+        }
 
         try {
             DB::beginTransaction();
@@ -225,8 +232,15 @@ class ProfessionalController extends Controller
         if($user_request->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "id professional invalido"], 400);
 
-        if(Auth::user()->id_user_type != UserType::ADMIN)
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
+
+        if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+
+            if(Auth::user()->id != $request->id_professional)
+                return response(["message" => "Accion invalida"], 400);
+
+        }
 
         try {
             DB::beginTransaction();
