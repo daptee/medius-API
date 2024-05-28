@@ -33,6 +33,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('auth/login', 'auth_login');
     Route::post('auth/account-recovery', 'auth_account_recovery');
     Route::post('auth/password-recovery', 'auth_password_recovery');
+    Route::post('auth/account-confirmation', 'auth_account_confirmation');
 });
 
 Route::group(['middleware' => ['auth:api']], function ($router) {

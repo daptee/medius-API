@@ -164,6 +164,39 @@ class AuthController extends Controller
         return response()->json(['message' => 'Contraseña actualizada con exito.'], 200);
     }
 
+    public function auth_account_confirmation(Request $request)
+    {
+        $request->validate([
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        try {
+            $decrypted_email = Crypt::decrypt($request->email);
+            
+            $user = User::where('email', $decrypted_email)->first();
+
+            if(!$user)
+                return response()->json(['message' => 'Datos incompletos para procesar la confirmación de la cuenta.'], 400);
+
+            DB::beginTransaction();
+            
+                $user->password = $request->password;
+                $user->email_confirmation = now()->format('Y-m-d H:i:s');
+                $user->save();
+            
+                Audith::new($user->id, "Confirmación de cuenta", $request->email, 200, null);
+            DB::commit();
+        } catch (DecryptException $e) {
+            DB::rollBack();
+            Audith::new($user->id, "Confirmación de cuenta", $request->email, 500, $e->getMessage());
+            Log::debug(["message" => "Error al realizar confirmación de cuenta.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => "Error al realizar confirmación de cuenta", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response()->json(['message' => 'Confirmación de cuenta exitosa.'], 200);
+    }
+
     public function auth_password_recovery_token(Request $request)
     {
         $request->validate([
