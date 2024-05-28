@@ -92,6 +92,12 @@ class ProfessionalController extends Controller
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
 
+        if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+            if(Auth::user()->id != $id){
+                return response(["message" => "Accion invalida"], 400);
+            }
+        }
+
         try {
             DB::beginTransaction();
                 $user = User::find($id);
