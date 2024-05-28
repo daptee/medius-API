@@ -45,7 +45,7 @@ class UserController extends Controller
                 'required',
                 Rule::unique('users')->ignore($id),
             ],
-            'password' => 'required|string|min:8',
+            // 'password' => 'required|string|min:8',
             'phone' => 'required',
             'data' => 'required',
         ]);
