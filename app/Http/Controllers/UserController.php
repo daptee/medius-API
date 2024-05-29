@@ -57,16 +57,11 @@ class UserController extends Controller
                 $user = User::find($id);
                 $user->update($request->all());
 
-                if(isset($request->company)){
-                    $company = Company::where('id_user', $id)->first();
-                    $company->update($request->company);
-                }
-
-                if(isset($request->branch_office)){
-                    $branch_office = BranchOffice::where('id_user', $id)->first();
-                    $branch_office->update($request->branch_office);
-                }
-
+                // if(isset($request->company)){
+                //     $company = Company::where('id_user', $id)->first();
+                //     $company->update($request->company);
+                // }
+              
                 Audith::new($id, "Actualización de usuario", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
@@ -178,14 +173,92 @@ class UserController extends Controller
         return $path;
     }
 
-    public function show()
+    public function get_admin()
     {
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
 
-        $data = User::getAllDataUser(Auth::user()->id);
+        $message = "Error al obtener datos de usuario admin";
+
+        try {
+            DB::beginTransaction();
+                $data = User::getAllDataUserAdmin(Auth::user()->id);
+
+                Audith::new(Auth::user()->id, "Get usuario admin", null, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Get usuario admin", null, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
 
         return response(compact("data"));
     }
+
+    public function get_admin_company()
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $message = "Error al obtener compania de usuario";
+    
+        try {
+            DB::beginTransaction();
+                $data = Company::where('id_user', Auth::user()->id)->first();
+
+                Audith::new(Auth::user()->id, "Get compania de usuario", null, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Get compania de usuario", null, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function update_admin_company(Request $request)
+    {
+        $request->validate([
+            'company' => 'required'
+        ]);
+
+        $message = "Error al actualizar usuario";
+        
+        try {
+            DB::beginTransaction();
+                $company = Company::where('id_user', Auth::user()->id)->first();
+                $company->update($request->company);
+
+                Audith::new(Auth::user()->id, "Actualización datos de compania", $request->all(), 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Actualización datos de compania", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $message = "Usuario actualizado exitosamente";
+        $data = $company;
+
+        return response(compact("message", "data"));
+    }
+
+    // public function update_admin_company(Request $request)
+    // {
+    //     $request->validate([
+    //         'branch_offices' => 'required'
+    //     ]);
+
+    //     foreach ($request->branch_offices as $branch_office) {
+    //         $new_branch_office = BranchOffice::create($branch_office);
+    //     }
+    //     // $branch_office = BranchOffice::where('id_user', $id)->first();
+    //     // $branch_office->update($request->branch_office);
+
+    // }
 
 }

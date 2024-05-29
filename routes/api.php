@@ -45,7 +45,9 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::post('users/plans', [UserController::class, 'user_plan']);
     Route::post('users/update', [UserController::class, 'update']);
     Route::post('users/profile_picture', [UserController::class, 'profile_picture']);
-    Route::get('users/admin', [UserController::class, 'show']);
+    Route::get('users/admin', [UserController::class, 'get_admin']);
+    Route::get('users/admin/company', [UserController::class, 'get_admin_company']);
+    Route::post('users/admin/company', [UserController::class, 'update_admin_company']);
     
     // PatientController
     Route::post('users/patient', [PatientController::class, 'new_user_patient']);

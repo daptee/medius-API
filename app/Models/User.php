@@ -55,25 +55,30 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files', 'schedules.rest_hours'];
+    const DATA_WITH_ALL = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files', 'schedules.rest_hours'];
+
+    const DATA_WITH = ['status'];
+    const DATA_SELECT = ['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'];
 
     public static function getAllDataUser($id)
     {
-        return User::with(User::DATA_WITH)->find($id);
+        return User::with(User::DATA_WITH_ALL)->find($id);
+    }
+
+    public static function getAllDataUserAdmin($id)
+    {
+        return User::with(User::DATA_WITH)->select(User::DATA_SELECT)->find($id);
     }
 
     public static function getAllDataUserProfessional($id)
     {
-        return User::with(['status'])
-                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
-                ->find($id);
+        return User::with(User::DATA_WITH)->select(User::DATA_SELECT)->find($id);
+
     }
 
     public static function getAllDataUserPatient($id)
     {
-        return User::with(['status'])
-                ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
-                ->find($id);
+        return User::with(User::DATA_WITH)->select(User::DATA_SELECT)->find($id);
     }
 
     public function user_type(): HasOne
