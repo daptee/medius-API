@@ -204,9 +204,12 @@ class ProfessionalController extends Controller
                     ProfessionalRestHour::where('id_professional_schedule', $professional_schedule->id)->delete();
                     $professional_schedule->delete();
                 }
+        
+                Audith::new(Auth::user()->id, "Horarios de profesional eliminados con exito", ["id_professional" => $id_professional], 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
+            Audith::new(Auth::user()->id, "Error al eliminar horarios de profesional", ["id_professional" => $id_professional], 500, $e->getMessage());
             Log::debug(["message" => "Error al eliminar horarios de profesional", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => "Error al eliminar horarios de profesional", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -220,7 +223,27 @@ class ProfessionalController extends Controller
         if($user->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "id professional invalido"], 400);
 
-        $data = User::getAllDataUserProfessional($id_professional);
+        $message = "Error al obtener profesional";
+        $data = null;
+    
+        if(isset(Auth::user()->id)){
+            if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+                if(Auth::user()->id != $id_professional){
+                    return response(["message" => "Accion invalida"], 400);
+                }
+            }
+        }
+
+        $id_user = Auth::user()->id ?? null;
+        try {
+            $data = User::getAllDataUserProfessional($id_professional);
+
+            Audith::new($id_user, "Get profesional", ["id_professional" => $id_professional], 200, null);
+        } catch (Exception $e) {
+            Audith::new($id_user, "Get profesional", ["id_professional" => $id_professional], 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
 
         return response(compact("data"));
     }

@@ -36,6 +36,7 @@ class PatientController extends Controller
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
 
+        $id_user_token = Auth::user()->id ?? null;
         try {
             DB::beginTransaction();
                 $new_user = new User($request->all());
@@ -43,11 +44,11 @@ class PatientController extends Controller
                 $new_user->id_user_type = UserType::PACIENTE;
                 $new_user->save();
 
-                Audith::new($new_user->id, "Nuevo usuario paciente", $request->all(), 200, null);
+                Audith::new($id_user_token, "Nuevo usuario paciente", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new(null, "Nuevo usuario paciente", $request->all(), 500, $e->getMessage());
+            Audith::new($id_user_token, "Nuevo usuario paciente", $request->all(), 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -55,8 +56,10 @@ class PatientController extends Controller
         if($new_user){
             try {
                 Mail::to($new_user->email)->send(new WelcomeUserMailable($new_user));
-            } catch (Exception $error) {
-                Log::debug(["message" => "Error al enviar mail de bienvenida.", "error" => $error->getMessage(), "line" => $error->getLine()]);
+                Audith::new($id_user_token, "Envio de mail de bienvenida exitoso.", $request->all(), 200, null);
+            } catch (Exception $e) {
+                Audith::new($id_user_token, "Error al enviar mail de bienvenida.", $request->all(), 500, $e->getMessage());
+                Log::debug(["message" => "Error al enviar mail de bienvenida.", "error" => $e->getMessage(), "line" => $e->getLine()]);
                 // Retornamos que no se pudo enviar el mail o no hace falta solo queda en el log?
             }
         }

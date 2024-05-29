@@ -60,11 +60,11 @@ class AuthController extends Controller
                 $new_branch_office->id_province = $data['branch_office']['id_province'];
                 $new_branch_office->save();
     
-                Audith::new($new_user->id, "Registro de usuario", $data['user'], 200, null);
+                Audith::new($new_user->id, "Registro de usuario", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new($new_user->id, "Registro de usuario", $data['user'], 500, $e->getMessage());
+            Audith::new($new_user->id, "Registro de usuario", $request->all(), 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
