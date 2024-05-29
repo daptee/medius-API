@@ -1,31 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GetsFunctionsController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/countries', function () {
-    $countries = App\Models\Country::with('provinces')->get();
-    return response(["data" => $countries]);
-});
-
-Route::get('/provinces', function () {
-    $provinces = App\Models\Province::with('country')->get();
-    return response(["data" => $provinces]);
-});
-
-Route::get('/specialties', function () {
-    $specialties = App\Models\Specialty::get();
-    return response(["data" => $specialties]);
-});
-
-Route::get('/users/status', function () {
-    $users_status = App\Models\UserStatus::get();
-    return response(["data" => $users_status]);
-});
 
 Route::controller(AuthController::class)->group(function () {
     // Route::post('login/admin', 'login_admin');
@@ -66,4 +47,12 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/professional/{id}', [ProfessionalController::class, 'get_professional']);
     Route::post('users/professional/special_dates', [ProfessionalController::class, 'professional_special_dates']);
     Route::get('users/professional/special_dates/{id_professional}', [ProfessionalController::class, 'get_professional_special_dates']);
+});
+
+Route::controller(GetsFunctionsController::class)->group(function () {
+    Route::get('/countries', 'countries');
+    Route::get('/provinces', 'provinces');
+    Route::get('/specialties', 'specialties');
+    Route::get('/users/status', 'usersStatus');
+    Route::get('/social_works', 'socialWorks');
 });

@@ -134,7 +134,6 @@ class ProfessionalController extends Controller
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             Audith::new(Auth::user()->id, "Listado de profesionales", null, 500, $e->getMessage());
-            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
