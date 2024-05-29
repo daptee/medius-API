@@ -103,11 +103,11 @@ class ProfessionalController extends Controller
                 $user = User::find($id);
                 $user->update($request->all());
 
-                Audith::new($id, "Actualización usuario profesional", $request->all(), 200, null);
+                Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_user' => $id], 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new($id, "Actualización usuario profesional", $request->all(), 500, $e->getMessage());
+            Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_user' => $id], 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -280,9 +280,12 @@ class ProfessionalController extends Controller
         try {
             DB::beginTransaction();
                 ProfessionalSpecialDate::where('id_professional', $id_professional)->delete();
+            
+                Audith::new(Auth::user()->id, "Listado de fechas especiales de profesional", ["id_professional" => $id_professional], 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
+            Audith::new(Auth::user()->id, "Error al eliminar fechas especiales de profesional", ["id_professional" => $id_professional], 500, $e->getMessage());
             Log::debug(["message" => "Error al eliminar fechas especiales de profesional", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => "Error al eliminar fechas especiales de profesional", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -292,13 +295,37 @@ class ProfessionalController extends Controller
 
     public function get_professional_special_dates($id_professional)
     {
-        $data = ProfessionalSpecialDate::where('id_professional', $id_professional)->get();
+        $message = "Error al obtener listado de fechas especiales";
+        $data = null;
+        $id_user = Auth::user()->id ?? null;
+        try {
+            $data = ProfessionalSpecialDate::where('id_professional', $id_professional)->get();
+
+            Audith::new($id_user, "Listado de fechas especiales", ["id_professional", $id_professional], 200, null);
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            Audith::new($id_user, "Listado de fechas especiales", ["id_professional", $id_professional], 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
         return response(compact("data"));
     }
 
     public function get_professional_schedules($id_professional)
     {
-        $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $id_professional)->get();
+        $message = "Error al obtener listado de horarios";
+        $data = null;
+        $id_user = Auth::user()->id ?? null;
+        try {
+            $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $id_professional)->get();
+
+            Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
         return response(compact("data"));
     }
 }

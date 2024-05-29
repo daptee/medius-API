@@ -73,8 +73,10 @@ class AuthController extends Controller
         if($new_user){
             try {
                 Mail::to($new_user->email)->send(new WelcomeUserMailable($new_user));
-            } catch (Exception $error) {
-                Log::debug(["message" => "Error al enviar mail de bienvenida.", "error" => $error->getMessage(), "line" => $error->getLine()]);
+                Audith::new($new_user->id, "Envio de mail de bienvenida exitoso.", $request->all(), 200, null);
+            } catch (Exception $e) {
+                Audith::new($new_user->id, "Error al enviar mail de bienvenida.", $request->all(), 500, $e->getMessage());
+                Log::debug(["message" => "Error al enviar mail de bienvenida.", "error" => $e->getMessage(), "line" => $e->getLine()]);
                 // Retornamos que no se pudo enviar el mail o no hace falta solo queda en el log?
             }
         }

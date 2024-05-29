@@ -227,7 +227,27 @@ class PatientController extends Controller
         if($user->id_user_type != UserType::PACIENTE)
             return response(["message" => "id patient invalido"], 400);
 
-        $data = User::getAllDataUserPatient($id_patient);
+        $message = "Error al obtener paciente";
+        $data = null;
+
+        if(isset(Auth::user()->id)){
+            if(Auth::user()->id_user_type == UserType::PACIENTE){
+                if(Auth::user()->id != $id_patient){
+                    return response(["message" => "Accion invalida"], 400);
+                }
+            }
+        }
+
+        $id_user = Auth::user()->id ?? null;
+        try {
+            $data = User::getAllDataUserPatient($id_patient);
+
+            Audith::new($id_user, "Get paciente", ["id_patient" => $id_patient], 200, null);
+        } catch (Exception $e) {
+            Audith::new($id_user, "Get paciente", ["id_patient" => $id_patient], 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
 
         return response(compact("data"));
     }
