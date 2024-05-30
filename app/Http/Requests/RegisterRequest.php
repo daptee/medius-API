@@ -31,6 +31,7 @@ class RegisterRequest extends FormRequest
             'user.email' => 'required|string|email|max:255|unique:users,email',
             'user.password' => 'required|string|min:8',
             'company.name' => 'required|string|max:255',
+            'company.email' => 'required|string|email|max:50',
             'company.CUIT' => 'required',
             'branch_office.name' => 'required|string|max:255',
             'branch_office.address' => 'required|string|max:255',

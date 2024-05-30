@@ -220,7 +220,10 @@ class UserController extends Controller
     public function update_admin_company(Request $request)
     {
         $request->validate([
-            'company' => 'required'
+            'company' => 'required',
+            'company.name' => 'required|string|max:255',
+            'company.email' => 'required|string|email|max:50',
+            'company.CUIT' => 'required',
         ]);
 
         $message = "Error al actualizar usuario";
