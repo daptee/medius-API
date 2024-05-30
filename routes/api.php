@@ -29,6 +29,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/admin', [UserController::class, 'get_admin']);
     Route::get('users/admin/company', [UserController::class, 'get_admin_company']);
     Route::post('users/admin/company', [UserController::class, 'update_admin_company']);
+    Route::post('users/admin/company_file', [UserController::class, 'company_file']);
     
     // PatientController
     Route::post('users/patient', [PatientController::class, 'new_user_patient']);

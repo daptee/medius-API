@@ -245,6 +245,45 @@ class UserController extends Controller
         return response(compact("message", "data"));
     }
 
+    public function company_file(Request $request)
+    {
+        $request->validate([
+            'company_file' => 'required|file|max:2048',
+        ]);
+
+        $message = "Error al cargar archivo.";
+        
+        try {
+            DB::beginTransaction();
+            $company = Company::where('id_user', Auth::user()->id)->first();
+
+            if($company->url_file){
+                $file_path = public_path($company->url_file);
+            
+                if (file_exists($file_path))
+                    unlink($file_path);
+            }
+
+            $path = $this->save_image_public_folder($request->company_file, "users/company/", null);
+            
+            $company->url_file = $path;
+            $company->save();
+
+            Audith::new(Auth::user()->id, "Carga de archivo en compania", null, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Carga de archivo en compania", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = $company;
+        $message = "Archivo cargado exitosamente";
+
+        return response(compact("message", "data"));
+    }
+
     // public function update_admin_company(Request $request)
     // {
     //     $request->validate([

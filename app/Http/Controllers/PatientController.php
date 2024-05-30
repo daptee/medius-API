@@ -90,24 +90,30 @@ class PatientController extends Controller
 
         $message = "Error al actualizar usuario paciente";
 
-        if(Auth::user()->id_user_type != UserType::ADMIN)
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PACIENTE)
             return response(["message" => "Usuario invalido"], 400);
 
         $user = User::find($id);
-        
+
         if($user->id_user_type != UserType::PACIENTE)
             return response(["message" => "El usuario seleccionado no es un Paciente"], 400);
+
+        if(Auth::user()->id_user_type == UserType::PACIENTE){
+            if(Auth::user()->id != $id){
+                return response(["message" => "Accion invalida"], 400);
+            }
+        }
 
         try {
             DB::beginTransaction();
 
                 $user->update($request->all());
 
-                Audith::new($id, "Actualización usuario paciente", $request->all(), 200, null);
+                Audith::new(Auth::user()->id, "Actualización usuario paciente", [$request->all(), "id_patient"=> $id], 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new($id, "Actualización usuario paciente", $request->all(), 500, $e->getMessage());
+            Audith::new(Auth::user()->id, "Actualización usuario paciente", [$request->all(), "id_patient" => $id], 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }

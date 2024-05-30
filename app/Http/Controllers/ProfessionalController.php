@@ -103,11 +103,11 @@ class ProfessionalController extends Controller
                 $user = User::find($id);
                 $user->update($request->all());
 
-                Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_user' => $id], 200, null);
+                Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_profesional' => $id], 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_user' => $id], 500, $e->getMessage());
+            Audith::new(Auth::user()->id, "Actualización usuario profesional", [$request->all(), 'id_profesional' => $id], 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
