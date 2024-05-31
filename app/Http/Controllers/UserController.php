@@ -287,6 +287,86 @@ class UserController extends Controller
         return response(compact("message", "data"));
     }
 
+    public function get_admin_branch_offices()
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $message = "Error al obtener sucursales";
+    
+        try {
+            DB::beginTransaction();
+                $data = BranchOffice::with(['province'])->where('id_user', Auth::user()->id)->get();
+
+                Audith::new(Auth::user()->id, "Get sucursales de usuario", null, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Get sucursales de usuario", null, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function new_admin_branch_office(Request $request)
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $message = "Error al crear sucursal";
+    
+        try {
+            DB::beginTransaction();
+                $branch_office = new BranchOffice($request->all());
+                $branch_office->id_user = Auth::user()->id;
+                $branch_office->save();
+                Audith::new(Auth::user()->id, "Nueva sucursal", $request->all(), 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Nueva sucursal", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = $branch_office;
+
+        return response(compact("data"));
+    }
+
+    public function update_admin_branch_office(Request $request, $id)
+    {    
+        if(Auth::user()->id_user_type != UserType::ADMIN)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $message = "Error al actualizar sucursal";
+        
+        $branch_office = BranchOffice::find($id);
+            
+        if(!$branch_office)
+            return response(["message" => "Sucursal invalida"], 400);
+        
+        try {
+            DB::beginTransaction();
+                $branch_office = BranchOffice::find($id);
+                $branch_office->update($request->all());
+
+                Audith::new(Auth::user()->id, "Actualización de sucursal", $request->all(), 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Actualización de sucursal", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = $branch_office;
+
+        return response(compact("data"));
+    }
+
     // public function update_admin_company(Request $request)
     // {
     //     $request->validate([

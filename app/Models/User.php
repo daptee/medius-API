@@ -55,7 +55,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    const DATA_WITH_ALL = ['user_type', 'status', 'company', 'branch_office.province.country', 'plan', 'files', 'schedules.rest_hours'];
+    const DATA_WITH_ALL = ['user_type', 'status', 'company', 'branch_offices.province', 'plan', 'files', 'schedules.rest_hours'];
 
     const DATA_WITH = ['status'];
     const DATA_SELECT = ['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'];
@@ -91,9 +91,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Company::class, 'id_user');
     }
 
-    public function branch_office(): HasOne
+    public function branch_offices(): HasMany
     {
-        return $this->hasOne(BranchOffice::class, 'id_user');
+        return $this->hasMany(BranchOffice::class, 'id_user');
     }
 
     public function plan(): HasOne

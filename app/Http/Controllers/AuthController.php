@@ -45,7 +45,6 @@ class AuthController extends Controller
     {
         $message = "Error al crear {$this->s} en registro";
         $data = $request->validated();
-
         try {
             DB::beginTransaction();
                 $new_user = new $this->model($data['user']);
@@ -55,10 +54,13 @@ class AuthController extends Controller
                 $new_company->id_user = $new_user->id;
                 $new_company->save();
 
-                $new_branch_office = new BranchOffice($data['branch_office']);
-                $new_branch_office->id_user = $new_user->id;
-                $new_branch_office->id_province = $data['branch_office']['id_province'];
-                $new_branch_office->save();
+                if(isset($data['branch_offices'])){
+                    foreach ($data['branch_offices'] as $branch_office) {
+                        $new_branch_office = new BranchOffice($branch_office);
+                        $new_branch_office->id_user = $new_user->id;
+                        $new_branch_office->save();
+                    }
+                }
     
                 Audith::new($new_user->id, "Registro de usuario", $request->all(), 200, null);
             DB::commit();

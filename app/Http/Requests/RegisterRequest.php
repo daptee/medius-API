@@ -33,10 +33,8 @@ class RegisterRequest extends FormRequest
             'company.name' => 'required|string|max:255',
             'company.email' => 'required|string|email|max:50',
             'company.CUIT' => 'required',
-            'branch_office.name' => 'required|string|max:255',
-            'branch_office.address' => 'required|string|max:255',
-            'branch_office.locality' => 'required|string|max:255',
-            'branch_office.id_province' => 'required',
+            'company.phone' => 'max:255',
+            'branch_offices' => 'required',
         ];
     }
 
