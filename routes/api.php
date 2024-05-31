@@ -5,6 +5,7 @@ use App\Http\Controllers\GetsFunctionsController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserSpecialtyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,12 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/professional/{id}', [ProfessionalController::class, 'get_professional']);
     Route::post('users/professional/special_dates', [ProfessionalController::class, 'professional_special_dates']);
     Route::get('users/professional/special_dates/{id_professional}', [ProfessionalController::class, 'get_professional_special_dates']);
+
+    // UserSpecialtyController
+    Route::get('users/specialties', [UserSpecialtyController::class, 'get_specialties']);
+    Route::post('users/specialty', [UserSpecialtyController::class, 'new_specialty_user']);
+    Route::put('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'update_specialty_user']);
+    Route::delete('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'delete_specialty_user']);
 });
 
 Route::controller(GetsFunctionsController::class)->group(function () {
