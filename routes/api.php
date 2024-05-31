@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GetsFunctionsController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfessionalController;
+use App\Http\Controllers\UserClinicHistoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserSpecialtyController;
 use Illuminate\Http\Request;
@@ -59,8 +60,15 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::put('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'update_specialty_user']);
     Route::delete('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'delete_specialty_user']);
 
-    Route::get('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'get_specialties_professional']);
-    Route::post('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'new_specialties_professional']);
+        // Profesional
+        Route::get('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'get_specialties_professional']);
+        Route::post('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'new_specialties_professional']);
+
+        // Paciente
+        Route::get('users/patient/clinic_history/{id_patient}', [UserClinicHistoryController::class, 'get_clinic_history_patient']);
+        Route::get('clinic_history/{id}', [UserClinicHistoryController::class, 'get_clinic_history']);
+        Route::post('users/patient/clinic/history', [UserClinicHistoryController::class, 'new_clinic_history_patient']);
+
 });
 
 Route::controller(GetsFunctionsController::class)->group(function () {
