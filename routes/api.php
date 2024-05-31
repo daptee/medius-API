@@ -58,6 +58,9 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::post('users/specialty', [UserSpecialtyController::class, 'new_specialty_user']);
     Route::put('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'update_specialty_user']);
     Route::delete('users/specialty/{id_specialty_user}', [UserSpecialtyController::class, 'delete_specialty_user']);
+
+    Route::get('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'get_specialties_professional']);
+    Route::post('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'new_specialties_professional']);
 });
 
 Route::controller(GetsFunctionsController::class)->group(function () {
