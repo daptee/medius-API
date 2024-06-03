@@ -167,12 +167,12 @@ class PatientController extends Controller
         try {
             DB::beginTransaction();
             foreach ($request->patient_files as $patient_file) {
-                $file_name = $patient_file->getClientOriginalName();
-                $patient_file->move(public_path("patients/{$user->id}/files"), $file_name);
+
+                $path = $this->save_image_public_folder($patient_file, "patients/{$user->id}/files", null);
     
                 $patient_file = new PatientFile();
                 $patient_file->id_patient = $user->id;
-                $patient_file->file_name = $file_name;
+                $patient_file->file_name = $path;
                 $patient_file->save();
             }
     
@@ -184,10 +184,25 @@ class PatientController extends Controller
             return response(["message" => "Error al cargar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = User::getAllDataUserPatient($user->id);
+        $data = PatientFile::where('id_patient', $request->id_user)->get();
         $message = "Carga de archivos exitoso";
         return response(compact("message", "data"));
     }  
+
+    public function save_image_public_folder($file, $path_to_save, $variable_id)
+    {
+        $fileName = Str::random(5) . time() . '.' . $file->extension();
+                        
+        if($variable_id){
+            $file->move(public_path($path_to_save . $variable_id), $fileName);
+            $path = "/" . $path_to_save . $variable_id . "/$fileName";
+        }else{
+            $file->move(public_path($path_to_save), $fileName);
+            $path = "/" . $path_to_save . $fileName;
+        }
+
+        return $path;
+    }
     
     public function delete_patient_files(Request $request)
     {
@@ -225,7 +240,7 @@ class PatientController extends Controller
             return response(["message" => "Error al eliminar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = User::getAllDataUserPatient($user_id);
+        $data = PatientFile::where('id_patient', $user_id)->get();
         $message = "Eliminación de archivos exitoso";
         return response(compact("message", "data"));
     }
@@ -257,6 +272,21 @@ class PatientController extends Controller
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
+
+        return response(compact("data"));
+    }
+
+    public function get_patient_files($id)
+    {
+        $user = User::find($id);
+        
+        if(!$user)
+            return response(["message" => "ID invalido."], 400);
+
+        if($user->id_user_type != UserType::PACIENTE)
+            return response(["message" => "El usuario seleccionado no es un Paciente"], 400);
+
+        $data = PatientFile::where('id_patient', $id)->get();
 
         return response(compact("data"));
     }

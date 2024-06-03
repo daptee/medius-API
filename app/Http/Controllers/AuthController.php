@@ -104,7 +104,7 @@ class AuthController extends Controller
             Audith::new($user->id, "Login de usuario", $credentials['email'], 200, null);
 
         }catch (Exception $e) {
-            Audith::new($user->id, "Login de usuario", $credentials['email'], 500, $e->getMessage());
+            Audith::new(null, "Login de usuario", $credentials['email'], 500, $e->getMessage());
             Log::debug(["message" => "No fue posible crear el Token de Autenticación.", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response()->json(['message' => 'No fue posible crear el Token de Autenticación.'], 500);
         }
