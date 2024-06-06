@@ -36,7 +36,7 @@ class UserClinicHistoryController extends Controller
         $message = "Error al obtener historia clinica de paciente";
         $data = null;
         try {
-            $data = ClinicHistory::with(['professional'])->where('id_patient', $id)->get();
+            $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture'])->where('id_patient', $id)->get();
 
             Audith::new(Auth::user()->id, "Get historia clinica de paciente", ['id_patient' => $id], 200, null);
         } catch (Exception $e) {
@@ -70,6 +70,11 @@ class UserClinicHistoryController extends Controller
 
     public function new_clinic_history_patient(Request $request)
     {
+        $request->validate([
+            'id_patient' => 'required|exists:users,id',
+            'id_professional' => 'required|exists:users,id',
+        ]);
+        
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
 
