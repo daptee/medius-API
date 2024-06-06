@@ -93,7 +93,7 @@ class GetsFunctionsController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = SocialWork::all();
+            $data = SocialWork::orderBy('name', 'asc')->get();
             Audith::new($id_user, "Listado de obras sociales", null, 200, null);
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
