@@ -37,6 +37,11 @@ class UserClinicHistoryController extends Controller
         $data = null;
         try {
             $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture'])->where('id_patient', $id)->get();
+            
+            foreach ($data as $item) {
+                $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
+                $item['has_files'] = $count > 0 ? true : false;
+            }
 
             Audith::new(Auth::user()->id, "Get historia clinica de paciente", ['id_patient' => $id], 200, null);
         } catch (Exception $e) {
@@ -56,7 +61,7 @@ class UserClinicHistoryController extends Controller
         $message = "Error al obtener historia clinica";
         $data = null;
         try {
-            $data = ClinicHistory::with(['professional'])->find($id);
+            $data = ClinicHistory::with(['professional:id,name,last_name,email,profile_picture', 'files'])->find($id);
 
             Audith::new(Auth::user()->id, "Get historia clinica", ['id_patient' => $id], 200, null);
         } catch (Exception $e) {
@@ -73,6 +78,8 @@ class UserClinicHistoryController extends Controller
         $request->validate([
             'id_patient' => 'required|exists:users,id',
             'id_professional' => 'required|exists:users,id',
+            'datetime' => 'required',
+            'observations' => 'required',
         ]);
         
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
@@ -103,7 +110,7 @@ class UserClinicHistoryController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = ClinicHistory::getAllData($clinic_history->id);
+        $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'files'])->find($clinic_history->id);
         $message = "Historia clinica guardada con exito";
         return response(compact("data"));
     }
