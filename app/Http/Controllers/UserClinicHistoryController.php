@@ -36,7 +36,7 @@ class UserClinicHistoryController extends Controller
         $message = "Error al obtener historia clinica de paciente";
         $data = null;
         try {
-            $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'professional.specialties.status'])->where('id_patient', $id)->get();
+            $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'professional.specialties.status', 'professional.specialties.specialty'])->where('id_patient', $id)->get();
             
             foreach ($data as $item) {
                 $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
@@ -61,7 +61,7 @@ class UserClinicHistoryController extends Controller
         $message = "Error al obtener historia clinica";
         $data = null;
         try {
-            $data = ClinicHistory::with(['professional:id,name,last_name,email,profile_picture', 'professional.specialties.status', 'files'])->find($id);
+            $data = ClinicHistory::with(['professional:id,name,last_name,email,profile_picture', 'professional.specialties.status', 'professional.specialties.specialty', 'files'])->find($id);
 
             Audith::new(Auth::user()->id, "Get historia clinica", ['id_patient' => $id], 200, null);
         } catch (Exception $e) {
@@ -110,7 +110,7 @@ class UserClinicHistoryController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'professional.specialties.status', 'files'])->find($clinic_history->id);
+        $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'professional.specialties.status', 'professional.specialties.specialty', 'files'])->find($clinic_history->id);
         $message = "Historia clinica guardada con exito";
         return response(compact("data"));
     }
