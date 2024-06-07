@@ -22,8 +22,8 @@ class UserClinicHistoryController extends Controller
 {
     public function get_clinic_history_patient($id)
     {
-        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
-            return response(["message" => "Usuario invalido"], 400);
+        // if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+            // return response(["message" => "Usuario invalido"], 400);
 
         $user = User::find($id);
 
