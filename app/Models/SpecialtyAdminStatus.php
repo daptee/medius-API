@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SpecialtyUserStatus extends Model
+class SpecialtyAdminStatus extends Model
 {
     use HasFactory;
 
-    protected $table = "specialties_user_status";
+    protected $table = "specialties_admin_status";
 
     const ACTIVO = 1;
     const INACTIVO = 2;

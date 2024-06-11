@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NewUserProfesionalRequest;
 use App\Mail\WelcomeUserMailable;
 use App\Models\Audith;
+use App\Models\Professional;
 use App\Models\ProfessionalRestHour;
 use App\Models\ProfessionalSchedule;
 use App\Models\ProfessionalSpecialDate;
@@ -45,11 +46,16 @@ class ProfessionalController extends Controller
                 $new_user->id_user_type = UserType::PROFESIONAL;
                 $new_user->save();
 
-                Audith::new($new_user->id, "Nuevo usuario profesional", $request->all(), 200, null);
+                $admin_profesional = new Professional();
+                $admin_profesional->id_user_admin = Auth::user()->id;
+                $admin_profesional->id_professional = $new_user->id;
+                $admin_profesional->save();
+
+                Audith::new(Auth::user()->id, "Nuevo usuario profesional", $request->all(), 200, null);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new(null, "Nuevo usuario profesional", $request->all(), 500, $e->getMessage());
+            Audith::new(Auth::user()->id, "Nuevo usuario profesional", $request->all(), 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }

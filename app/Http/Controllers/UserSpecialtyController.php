@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Audith;
+use App\Models\Professional;
+use App\Models\ProfessionalRestHour;
 use App\Models\Specialty;
 use App\Models\SpecialtyProfessional;
-use App\Models\SpecialtyUser;
-use App\Models\SpecialtyUserStatus;
+use App\Models\SpecialtyAdmin;
+use App\Models\SpecialtyAdminStatus;
 use App\Models\User;
 use App\Models\UserType;
 use Exception;
@@ -19,13 +21,24 @@ class UserSpecialtyController extends Controller
 {
     public function get_specialties()
     {
-        if(Auth::user()->id_user_type != UserType::ADMIN)
-            return response(["message" => "Usuario invalido"], 400);
+        // if(Auth::user()->id_user_type != UserType::ADMIN)
+            // return response(["message" => "Usuario invalido"], 400);
 
+        if(Auth::user()->id_user_type != UserType::ADMIN){
+            $admin_professional = Professional::where('id_professional', Auth::user()->id)->first();
+            $id_user = $admin_professional->id_user_admin ?? null;
+        }else{
+            $id_user = Auth::user()->id;
+        }
+
+        if(is_null($id_user))
+            return response(["message" => "Error al obtener admin creador de profesional"], 400);
+        
+        // si es admin logica y sino tmb, buscar admin
         $message = "Error al obtener listado de especiales asociadas al usuario";
         $data = null;
         try {
-            $data = SpecialtyUser::with(['specialty', 'status'])->where('id_user', Auth::user()->id)->get();
+            $data = SpecialtyAdmin::with(['specialty', 'status'])->where('id_user', $id_user)->get();
 
             Audith::new(Auth::user()->id, "Listado de especiales asociadas al usuario", null, 200, null);
         } catch (Exception $e) {
@@ -52,9 +65,9 @@ class UserSpecialtyController extends Controller
         $data = null;
         try {
             DB::beginTransaction();
-            $specialty_user = new SpecialtyUser($request->all());
+            $specialty_user = new SpecialtyAdmin($request->all());
             $specialty_user->id_user = Auth::user()->id; 
-            $specialty_user->id_status = SpecialtyUserStatus::ACTIVO; 
+            $specialty_user->id_status = SpecialtyAdminStatus::ACTIVO; 
             $specialty_user->save(); 
             
             Audith::new(Auth::user()->id, "Cargar de especialidad a usuario", null, 200, null);
@@ -67,7 +80,7 @@ class UserSpecialtyController extends Controller
         }
 
         $message = "Especialidad cargada con exito";
-        $data = $specialty_user;
+        $data = SpecialtyAdmin::with(['specialty', 'status'])->find($specialty_user->id);
 
         return response(compact("data"));
     }
@@ -86,7 +99,7 @@ class UserSpecialtyController extends Controller
         $data = null;
         try {
             DB::beginTransaction();
-            $specialty_user = SpecialtyUser::find($id);
+            $specialty_user = SpecialtyAdmin::find($id);
             $specialty_user->update($request->all());
 
             Audith::new(Auth::user()->id, "Actualización de especialidad de usuario", null, 200, null);
@@ -99,7 +112,7 @@ class UserSpecialtyController extends Controller
         }
 
         $message = "Especialidad actualizada con exito";
-        $data = $specialty_user;
+        $data = SpecialtyAdmin::with(['specialty', 'status'])->find($id);
 
         return response(compact("data", "message"));
     }
@@ -113,7 +126,7 @@ class UserSpecialtyController extends Controller
         $data = null;
         try {
             DB::beginTransaction();
-            $specialty_user = SpecialtyUser::find($id);
+            $specialty_user = SpecialtyAdmin::find($id);
             $specialty_user->delete();
 
             Audith::new(Auth::user()->id, "Eliminación de especialidad de usuario", null, 200, null);
@@ -132,24 +145,24 @@ class UserSpecialtyController extends Controller
 
     public function get_specialties_professional($id)
     {
-        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
-            return response(["message" => "Usuario invalido"], 400);
+        // if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+        //     return response(["message" => "Usuario invalido"], 400);
 
 
-        if(Auth::user()->id_user_type == UserType::PROFESIONAL){
-            if(Auth::user()->id == $id){
-               return response(["message" => "Accion invalida"], 400);
-            }
-        }
+        // if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+        //     if(Auth::user()->id == $id){
+        //        return response(["message" => "Accion invalida"], 400);
+        //     }
+        // }
 
-        $message = "Error al obtener listado de especiales asociadas al profesional";
+        $message = "Error al obtener especialidades de profesional";
         $data = null;
         try {
-            $data = SpecialtyProfessional::with(['specialty'])->where('id_professional', $id)->get();
-
-            Audith::new(Auth::user()->id, "Listado de especiales asociadas al profesional", null, 200, null);
+            $user = User::find($id);
+            $data = $user->data->specialities ?? null;
+            Audith::new(Auth::user()->id, "Listado de especialidades de profesional", null, 200, null);
         } catch (Exception $e) {
-            Audith::new(Auth::user()->id, "Listado de especiales asociadas al profesional", null, 500, $e->getMessage());
+            Audith::new(Auth::user()->id, "Listado de especialidades de profesional", null, 500, $e->getMessage());
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }

@@ -7,8 +7,8 @@ use App\Models\ClinicHistory;
 use App\Models\ClinicHistoryFile;
 use App\Models\Specialty;
 use App\Models\SpecialtyProfessional;
-use App\Models\SpecialtyUser;
-use App\Models\SpecialtyUserStatus;
+use App\Models\SpecialtyAdmin;
+use App\Models\SpecialtyAdminStatus;
 use App\Models\User;
 use App\Models\UserType;
 use Exception;
@@ -36,6 +36,7 @@ class UserClinicHistoryController extends Controller
         $message = "Error al obtener historia clinica de paciente";
         $data = null;
         try {
+            // especialties por data
             $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'professional.specialties.status', 'professional.specialties.specialty'])->where('id_patient', $id)->get();
             
             foreach ($data as $item) {

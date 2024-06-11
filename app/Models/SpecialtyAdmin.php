@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class SpecialtyUser extends Model
+class SpecialtyAdmin extends Model
 {
     use HasFactory;
 
-    protected $table = "specialties_user";
+    protected $table = "specialties_admin";
 
     protected $fillable = [
         'id_user',
@@ -39,6 +39,6 @@ class SpecialtyUser extends Model
 
     public function status(): HasOne
     {
-        return $this->hasOne(SpecialtyUserStatus::class, 'id', 'id_status');
+        return $this->hasOne(SpecialtyAdminStatus::class, 'id', 'id_status');
     }
 }

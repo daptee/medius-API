@@ -63,7 +63,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
 
         // Profesional
         Route::get('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'get_specialties_professional']);
-        Route::post('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'new_specialties_professional']);
+        // Route::post('users/professional/specialties/{id_professional}', [UserSpecialtyController::class, 'new_specialties_professional']);
 
         // Paciente
         Route::get('users/patient/clinic_history/{id_patient}', [UserClinicHistoryController::class, 'get_clinic_history_patient']);
