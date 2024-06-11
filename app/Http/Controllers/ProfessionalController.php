@@ -48,7 +48,7 @@ class ProfessionalController extends Controller
 
                 $admin_profesional = new Professional();
                 $admin_profesional->id_user_admin = Auth::user()->id;
-                $admin_profesional->id_professional = $new_user->id;
+                $admin_profesional->id_profesional = $new_user->id;
                 $admin_profesional->save();
 
                 Audith::new(Auth::user()->id, "Nuevo usuario profesional", $request->all(), 200, null);
