@@ -25,7 +25,7 @@ class UserSpecialtyController extends Controller
             // return response(["message" => "Usuario invalido"], 400);
 
         if(Auth::user()->id_user_type != UserType::ADMIN){
-            $admin_professional = Professional::where('id_professional', Auth::user()->id)->first();
+            $admin_professional = Professional::where('id_profesional', Auth::user()->id)->first();
             $id_user = $admin_professional->id_user_admin ?? null;
         }else{
             $id_user = Auth::user()->id;
