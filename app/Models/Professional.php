@@ -13,6 +13,6 @@ class Professional extends Model
 
     protected $fillable = [
         'id_user_admin',
-        'id_professional',
+        'id_profesional',
     ];
 }
