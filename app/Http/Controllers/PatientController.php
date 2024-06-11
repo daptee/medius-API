@@ -168,7 +168,7 @@ class PatientController extends Controller
             DB::beginTransaction();
             foreach ($request->patient_files as $patient_file) {
 
-                $path = $this->save_image_public_folder($patient_file, "patients/{$user->id}/files", null);
+                $path = $this->save_image_public_folder($patient_file, "patients/{$user->id}/files/", null);
     
                 $patient_file = new PatientFile();
                 $patient_file->id_patient = $user->id;
