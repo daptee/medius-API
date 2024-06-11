@@ -224,10 +224,10 @@ class PatientController extends Controller
                         $file_path = public_path("patients/$patient_file->id_patient/files/$patient_file->file_name");
                         
                         if (file_exists($file_path)){
-                            $patient_file->delete();
                             unlink($file_path);
                         }
-
+                            
+                        $patient_file->delete();
                         // En caso de quedarse sin archivos borrar carpeta en public/patients ?
                     }
                 }
