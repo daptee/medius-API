@@ -24,7 +24,7 @@ class ClinicHistory extends Model
 
     public static function getAllData($id)
     {
-        return ClinicHistory::with(['professional:id,name,last_name,profile_picture', 'files'])->find($id);
+        return ClinicHistory::with(['professional:id,name,last_name,profile_picture,data', 'files'])->find($id);
     }
 
     public function professional(): HasOne
