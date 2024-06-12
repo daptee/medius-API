@@ -94,7 +94,7 @@ class UserClinicHistoryController extends Controller
             $id_patient = $request->id_patient;
             if($request->files_clinic_history){
                 foreach ($request->files_clinic_history as $file_clinic_history) {
-                    $path = $this->save_image_public_folder($file_clinic_history, "users/clinic_history/patient/$id_patient", null);
+                    $path = $this->save_image_public_folder($file_clinic_history, "users/clinic_history/patient/$id_patient/", null);
                     $clinic_history_file = new ClinicHistoryFile();
                     $clinic_history_file->id_clinic_history = $clinic_history->id;
                     $clinic_history_file->url = $path;
