@@ -170,10 +170,10 @@ class PatientController extends Controller
 
                 $path = $this->save_image_public_folder($patient_file, "patients/{$user->id}/files/", null);
     
-                $patient_file = new PatientFile();
-                $patient_file->id_patient = $user->id;
-                $patient_file->file_name = $path;
-                $patient_file->save();
+                $patientFile = new PatientFile();
+                $patientFile->id_patient = $user->id;
+                $patientFile->file_name = $path;
+                $patientFile->save();
             }
     
             Audith::new($user->id, "Carga de archivos a paciente", null, 200, null);

@@ -94,10 +94,18 @@ class UserClinicHistoryController extends Controller
             $id_patient = $request->id_patient;
             if($request->files_clinic_history){
                 foreach ($request->files_clinic_history as $file_clinic_history) {
+                    $fileSizeInBytes = $file_clinic_history->getSize();
+                    if ($fileSizeInBytes < 1048576) {
+                        $fileSize = round($fileSizeInBytes / 1024, 2) . ' KB'; // Si es menor a 1 MB, guardarlo en KB
+                    } else {
+                        $fileSize = round($fileSizeInBytes / 1048576, 2) . ' MB'; // Si es 1 MB o más, guardarlo en MB
+                    }
                     $path = $this->save_image_public_folder($file_clinic_history, "users/clinic_history/patient/$id_patient/", null);
                     $clinic_history_file = new ClinicHistoryFile();
                     $clinic_history_file->id_clinic_history = $clinic_history->id;
                     $clinic_history_file->url = $path;
+                    $clinic_history_file->original_name = $file_clinic_history->getClientOriginalName();
+                    $clinic_history_file->file_size = $fileSize;
                     $clinic_history_file->save();
                     Audith::new(Auth::user()->id, "Nuevo archivo para historia clinica", ['id_patient' => $request->id_patient], 200, null);
                 }
