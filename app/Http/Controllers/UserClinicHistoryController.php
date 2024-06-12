@@ -56,13 +56,13 @@ class UserClinicHistoryController extends Controller
 
     public function get_clinic_history($id)
     {
-        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
-            return response(["message" => "Usuario invalido"], 400);
+        // if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+        //     return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al obtener historia clinica";
         $data = null;
         try {
-            $data = ClinicHistory::with(['professional:id,name,last_name,email,profile_picture', 'professional.specialties.status', 'professional.specialties.specialty', 'files'])->find($id);
+            $data = ClinicHistory::with(['professional:id,name,last_name,email,profile_picture,data', 'files'])->find($id);
 
             Audith::new(Auth::user()->id, "Get historia clinica", ['id_patient' => $id], 200, null);
         } catch (Exception $e) {
