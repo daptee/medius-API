@@ -54,12 +54,12 @@ class AuthController extends Controller
                 $new_company->id_user = $new_user->id;
                 $new_company->save();
 
-                if(isset($data['branch_offices'])){
-                    foreach ($data['branch_offices'] as $branch_office) {
-                        $new_branch_office = new BranchOffice($branch_office);
+                if(isset($data['branch_office'])){
+                    // foreach ($data['branch_office'] as $branch_office) {
+                        $new_branch_office = new BranchOffice($data['branch_office']);
                         $new_branch_office->id_user = $new_user->id;
                         $new_branch_office->save();
-                    }
+                    // }
                 }
     
                 Audith::new($new_user->id, "Registro de usuario", $request->all(), 200, null);
