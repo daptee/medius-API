@@ -135,6 +135,7 @@ class PatientController extends Controller
             $data = $this->model::with(['status'])
                     ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PACIENTE)
+                    ->orderBy('id', 'desc')
                     ->get();
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
         } catch (Exception $e) {
@@ -184,7 +185,7 @@ class PatientController extends Controller
             return response(["message" => "Error al cargar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = PatientFile::where('id_patient', $request->id_user)->get();
+        $data = PatientFile::where('id_patient', $request->id_user)->orderBy('id', 'desc')->get();
         $message = "Carga de archivos exitoso";
         return response(compact("message", "data"));
     }  
@@ -240,7 +241,7 @@ class PatientController extends Controller
             return response(["message" => "Error al eliminar archivos: " . $e->getMessage()], 500);
         }
 
-        $data = PatientFile::where('id_patient', $user_id)->get();
+        $data = PatientFile::where('id_patient', $user_id)->orderBy('id', 'desc')->get();
         $message = "Eliminación de archivos exitoso";
         return response(compact("message", "data"));
     }
@@ -286,7 +287,7 @@ class PatientController extends Controller
         if($user->id_user_type != UserType::PACIENTE)
             return response(["message" => "El usuario seleccionado no es un Paciente"], 400);
 
-        $data = PatientFile::where('id_patient', $id)->get();
+        $data = PatientFile::where('id_patient', $id)->orderBy('id', 'desc')->get();
 
         return response(compact("data"));
     }

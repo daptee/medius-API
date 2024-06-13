@@ -296,7 +296,10 @@ class UserController extends Controller
     
         try {
             DB::beginTransaction();
-                $data = BranchOffice::with(['province.country'])->where('id_user', Auth::user()->id)->get();
+                $data = BranchOffice::with(['province.country', 'status'])
+                        ->where('id_user', Auth::user()->id)
+                        ->orderBy('id', 'desc')
+                        ->get();
 
                 Audith::new(Auth::user()->id, "Get sucursales de usuario", null, 200, null);
             DB::commit();
@@ -331,7 +334,10 @@ class UserController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = BranchOffice::with(['province.country'])->where('id_user', Auth::user()->id)->get();
+        $data = BranchOffice::with(['province.country', 'status'])
+                ->where('id_user', Auth::user()->id)
+                ->orderBy('id', 'desc')
+                ->get();
 
         return response(compact("data"));
     }
@@ -362,7 +368,10 @@ class UserController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = BranchOffice::with(['province.country'])->where('id_user', Auth::user()->id)->get();
+        $data = BranchOffice::with(['province.country', 'status'])
+                ->where('id_user', Auth::user()->id)
+                ->orderBy('id', 'desc')
+                ->get();
 
         return response(compact("data"));
     }

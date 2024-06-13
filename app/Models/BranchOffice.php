@@ -23,10 +23,15 @@ class BranchOffice extends Model
         'id_status'
     ];
 
-    protected $hidden = ['id_user', 'id_province', 'id_status', 'created_at', 'updated_at', 'deleted_at'];
+    protected $hidden = ['id_user', 'id_province', 'id_status', 'updated_at', 'deleted_at'];
 
     public function province(): HasOne
     {
         return $this->hasOne(Province::class, 'id', 'id_province');
+    }
+    
+    public function status(): HasOne
+    {
+        return $this->hasOne(BranchOfficeStatus::class, 'id', 'id_status');
     }
 }

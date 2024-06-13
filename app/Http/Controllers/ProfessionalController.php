@@ -134,6 +134,7 @@ class ProfessionalController extends Controller
             $data = $this->model::with(['status'])
                     ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PROFESIONAL)
+                    ->orderBy('id', 'desc')
                     ->get();
             // $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
             Audith::new(Auth::user()->id, "Listado de profesionales", null, 200, null);
@@ -196,7 +197,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $request->id_professional)->get();
+        $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $request->id_professional)->orderBy('id', 'desc')->get();
         $message = "Carga de horarios exitosa";
         return response(compact("message", "data"));
     }
@@ -299,7 +300,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = ProfessionalSpecialDate::where('id_professional', $request->id_professional)->get();
+        $data = ProfessionalSpecialDate::where('id_professional', $request->id_professional)->orderBy('id', 'desc')->get();
         $message = "Carga de fechas especiales exitosa";
         return response(compact("message", "data"));
     }
@@ -328,7 +329,7 @@ class ProfessionalController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = ProfessionalSpecialDate::where('id_professional', $id_professional)->get();
+            $data = ProfessionalSpecialDate::where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de fechas especiales", ["id_professional", $id_professional], 200, null);
         } catch (Exception $e) {
@@ -346,7 +347,7 @@ class ProfessionalController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $id_professional)->get();
+            $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
         } catch (Exception $e) {

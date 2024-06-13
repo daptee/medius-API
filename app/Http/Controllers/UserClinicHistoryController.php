@@ -37,7 +37,10 @@ class UserClinicHistoryController extends Controller
         $data = null;
         try {
             // especialties por data
-            $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture,data'])->where('id_patient', $id)->get();
+            $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture,data'])
+                    ->where('id_patient', $id)
+                    ->orderBy('id', 'desc')
+                    ->get();
             
             foreach ($data as $item) {
                 $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();

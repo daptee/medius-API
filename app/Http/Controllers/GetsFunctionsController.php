@@ -57,7 +57,7 @@ class GetsFunctionsController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = Specialty::get();
+            $data = Specialty::orderBy('name', 'asc')->get();
 
             Audith::new($id_user, "Listado de especialidades", null, 200, null);
         } catch (Exception $e) {

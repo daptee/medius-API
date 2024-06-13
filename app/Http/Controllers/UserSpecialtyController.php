@@ -38,7 +38,7 @@ class UserSpecialtyController extends Controller
         $message = "Error al obtener listado de especiales asociadas al usuario";
         $data = null;
         try {
-            $data = SpecialtyAdmin::with(['specialty', 'status'])->where('id_user', $id_user)->get();
+            $data = SpecialtyAdmin::with(['specialty', 'status'])->where('id_user', $id_user)->orderBy('id', 'desc')->get();
 
             Audith::new(Auth::user()->id, "Listado de especiales asociadas al usuario", null, 200, null);
         } catch (Exception $e) {
@@ -220,7 +220,7 @@ class UserSpecialtyController extends Controller
         }
 
         $message = "Especialidades cargadas con exito";
-        $data = SpecialtyProfessional::with(['specialty'])->where('id_professional', $id)->get();
+        $data = SpecialtyProfessional::with(['specialty'])->where('id_professional', $id)->orderBy('id', 'desc')->get();
 
         return response(compact("data"));
     }

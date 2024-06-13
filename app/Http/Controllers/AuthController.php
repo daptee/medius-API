@@ -54,13 +54,13 @@ class AuthController extends Controller
                 $new_company->id_user = $new_user->id;
                 $new_company->save();
 
-                if(isset($data['branch_office'])){
+                $new_branch_office = new BranchOffice($data['branch_office']);
+                $new_branch_office->id_user = $new_user->id;
+                $new_branch_office->save();
+                // if(isset($data['branch_office'])){
                     // foreach ($data['branch_office'] as $branch_office) {
-                        $new_branch_office = new BranchOffice($data['branch_office']);
-                        $new_branch_office->id_user = $new_user->id;
-                        $new_branch_office->save();
                     // }
-                }
+                // }
     
                 Audith::new($new_user->id, "Registro de usuario", $request->all(), 200, null);
             DB::commit();
@@ -91,13 +91,14 @@ class AuthController extends Controller
     public function auth_login(LoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
+        $loginField = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
         try{
-            $user = User::where('email' , $credentials['email'])->first();
+            $user = User::where($loginField , $credentials['email'])->first();
 
             if(!$user)
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 400);
 
-            if (! $token = auth()->attempt($credentials)) {
+            if (! $token = auth()->attempt([$loginField => $credentials['email'], 'password' => $credentials['password']])) {
                 return response()->json(['message' => 'Usuario y/o clave no válidos.'], 401);
             }
 
