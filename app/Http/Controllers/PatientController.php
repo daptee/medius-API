@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NewUserPatientRequest;
 use App\Mail\WelcomeUserMailable;
 use App\Models\Audith;
+use App\Models\Patient;
 use App\Models\PatientFile;
 use App\Models\User;
 use App\Models\UserType;
@@ -43,6 +44,11 @@ class PatientController extends Controller
                 $new_user->password = Str::random(10);
                 $new_user->id_user_type = UserType::PACIENTE;
                 $new_user->save();
+
+                $admin_profesional = new Patient();
+                $admin_profesional->id_user = Auth::user()->id;
+                $admin_profesional->id_patient = $new_user->id;
+                $admin_profesional->save();
 
                 Audith::new($id_user_token, "Nuevo usuario paciente", $request->all(), 200, null);
             DB::commit();
@@ -135,6 +141,7 @@ class PatientController extends Controller
             $data = $this->model::with(['status'])
                     ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PACIENTE)
+                    ->whereIn('id', $this->getIdsPatients(Auth::user()->id))
                     ->orderBy('id', 'desc')
                     ->get();
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
@@ -145,6 +152,20 @@ class PatientController extends Controller
         }
 
         return response(compact("data"));
+    }
+
+    public function getIdsPatients($id_user)
+    {
+        $ids_patients = [];
+        $array_patient_users = Patient::select('id_patient')->where('id_user', $id_user)->get();
+            
+        if($array_patient_users->count() > 0){
+            foreach($array_patient_users as $patient_user){
+                $ids_patients[] = $patient_user->id_patient;
+            };
+        }
+
+        return $ids_patients;
     }
 
     public function patient_files(Request $request)

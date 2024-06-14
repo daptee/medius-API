@@ -16,6 +16,7 @@ class ProfessionalSchedule extends Model
         'day',
         'start_time',
         'end_time',
+        'id_branch_office',
     ];
 
     protected $hidden = ['id_professional', 'created_at', 'updated_at'];
@@ -29,4 +30,10 @@ class ProfessionalSchedule extends Model
     {
         return $this->hasMany(ProfessionalRestHour::class, 'id_professional_schedule');
     }
+
+    public function branch_office(): HasOne
+    {
+        return $this->hasOne(BranchOffice::class, 'id', 'id_branch_office');
+    }
+    
 }

@@ -82,7 +82,7 @@ class UserSpecialtyController extends Controller
         $message = "Especialidad cargada con exito";
         $data = SpecialtyAdmin::with(['specialty', 'status'])->find($specialty_user->id);
 
-        return response(compact("data"));
+        return response(compact("message", "data"));
     }
 
     public function update_specialty_user(Request $request, $id)
@@ -114,7 +114,7 @@ class UserSpecialtyController extends Controller
         $message = "Especialidad actualizada con exito";
         $data = SpecialtyAdmin::with(['specialty', 'status'])->find($id);
 
-        return response(compact("data", "message"));
+        return response(compact("message", "data"));
     }
 
     public function delete_specialty_user($id)
@@ -222,7 +222,7 @@ class UserSpecialtyController extends Controller
         $message = "Especialidades cargadas con exito";
         $data = SpecialtyProfessional::with(['specialty'])->where('id_professional', $id)->orderBy('id', 'desc')->get();
 
-        return response(compact("data"));
+        return response(compact("message", "data"));
     }
 
     public function deleteSpecialtiesProfessional($id_professional)

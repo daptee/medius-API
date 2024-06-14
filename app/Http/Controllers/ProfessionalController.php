@@ -130,12 +130,15 @@ class ProfessionalController extends Controller
 
         $message = "Error al obtener registros";
         $data = null;
+        
         try {
             $data = $this->model::with(['status'])
                     ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PROFESIONAL)
+                    ->whereIn('id', $this->getIdsProfessionals(Auth::user()->id))
                     ->orderBy('id', 'desc')
                     ->get();
+
             // $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
             Audith::new(Auth::user()->id, "Listado de profesionales", null, 200, null);
         } catch (Exception $e) {
@@ -145,6 +148,20 @@ class ProfessionalController extends Controller
         }
 
         return response(compact("data"));
+    }
+
+    public function getIdsProfessionals($id_admin)
+    {
+        $ids_professionals = [];
+        $array_professional_users = Professional::select('id_profesional')->where('id_user_admin', $id_admin)->get();
+            
+        if($array_professional_users->count() > 0){
+            foreach($array_professional_users as $professional_user){
+                $ids_professionals[] = $professional_user->id_profesional;
+            };
+        }
+
+        return $ids_professionals;
     }
 
     public function professional_schedules(Request $request)
@@ -197,7 +214,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $request->id_professional)->orderBy('id', 'desc')->get();
+        $data = ProfessionalSchedule::with(['rest_hours', 'branch_office'])->where('id_professional', $request->id_professional)->orderBy('id', 'desc')->get();
         $message = "Carga de horarios exitosa";
         return response(compact("message", "data"));
     }
@@ -347,7 +364,7 @@ class ProfessionalController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = ProfessionalSchedule::with('rest_hours')->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
+            $data = ProfessionalSchedule::with(['rest_hours', 'branch_office'])->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
         } catch (Exception $e) {
