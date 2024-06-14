@@ -95,11 +95,15 @@ class UserSpecialtyController extends Controller
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
 
+        $specialty_user = SpecialtyAdmin::find($id);
+        
+        if(!$specialty_user)
+            return response(["message" => "No se ha podido actualizar especialidad, verifique ID enviado."], 400);
+
         $message = "Error al actualizar especialidad de usuario";
         $data = null;
         try {
             DB::beginTransaction();
-            $specialty_user = SpecialtyAdmin::find($id);
             $specialty_user->update($request->all());
 
             Audith::new(Auth::user()->id, "Actualización de especialidad de usuario", null, 200, null);
