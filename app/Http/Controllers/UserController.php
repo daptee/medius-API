@@ -16,6 +16,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -31,7 +32,7 @@ class UserController extends Controller
     {
         $id = Auth::user()->id;
         
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => [
@@ -47,6 +48,13 @@ class UserController extends Controller
             ],
             'data' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al actualizar usuario";
 
@@ -76,9 +84,16 @@ class UserController extends Controller
 
     public function user_plan(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id_plan' => 'required|numeric|exists:App\Models\Plan,id',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
@@ -112,9 +127,16 @@ class UserController extends Controller
 
     public function profile_picture(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'profile_picture' => 'required|file|max:2048',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al cargar foto de perfil";
         $user = null;
@@ -219,12 +241,19 @@ class UserController extends Controller
 
     public function update_admin_company(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'company' => 'required',
             'company.name' => 'required|string|max:255',
             'company.email' => 'required|string|email|max:50',
             'company.CUIT' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al actualizar usuario";
         
@@ -250,9 +279,16 @@ class UserController extends Controller
 
     public function company_file(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'company_file' => 'required|file|max:2048',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al cargar archivo.";
         

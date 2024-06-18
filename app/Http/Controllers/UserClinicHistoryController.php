@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class UserClinicHistoryController extends Controller
@@ -79,12 +80,19 @@ class UserClinicHistoryController extends Controller
 
     public function new_clinic_history_patient(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id_patient' => 'required|exists:users,id',
             'id_professional' => 'required|exists:users,id',
             'datetime' => 'required',
             'observations' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
         
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);

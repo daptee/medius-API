@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 class ProfessionalController extends Controller
 {
@@ -31,8 +32,23 @@ class ProfessionalController extends Controller
     public $pr = "el"; 
     public $prp = "los";
     
-    public function new_user_profesional(NewUserProfesionalRequest $request)
+    public function new_user_profesional(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'dni' => 'required|unique:users,dni',
+            'data' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $message = "Error al crear usuario profesional";
         $data = $request->validated();
 
@@ -76,7 +92,7 @@ class ProfessionalController extends Controller
 
     public function update_user_profesional(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => [
@@ -92,6 +108,13 @@ class ProfessionalController extends Controller
             ],
             'data' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al actualizar usuario profesional";
 
@@ -166,10 +189,17 @@ class ProfessionalController extends Controller
 
     public function professional_schedules(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id_professional' => 'required',
             'schedules' => 'required'
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al cargar horarios de profesional";
         
@@ -274,9 +304,16 @@ class ProfessionalController extends Controller
 
     public function professional_special_dates(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id_professional' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $message = "Error al cargar fechas especiales";
         

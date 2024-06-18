@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class UserSpecialtyController extends Controller
 {
@@ -52,11 +53,18 @@ class UserSpecialtyController extends Controller
 
     public function new_specialty_user(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             "id_specialty"=> 'required',
             "color"=> 'required',
             "shift_duration"=> 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
@@ -87,10 +95,17 @@ class UserSpecialtyController extends Controller
 
     public function update_specialty_user(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             "color"=> 'required',
             "shift_duration"=> 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
@@ -176,9 +191,16 @@ class UserSpecialtyController extends Controller
 
     public function new_specialties_professional(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             "specialties"=> 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use stdClass;
@@ -41,8 +42,27 @@ class AuthController extends Controller
     //     $this->middleware('auth:api', ['except' => ['auth_login']]);
     // }
     
-    public function auth_register(RegisterRequest $request)
+    public function auth_register(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'user.name' => 'required|string|max:255',
+            'user.last_name' => 'required|string|max:255',
+            'user.dni' => 'required|unique:users,dni',
+            'user.email' => 'required|string|email|max:255|unique:users,email',
+            'user.password' => 'required|string|min:8',
+            'company.name' => 'required|string|max:255',
+            'company.CUIT' => 'required',
+            'company.phone' => 'max:255',
+            'branch_office' => 'array'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $message = "Error al crear {$this->s} en registro";
         $data = $request->validated();
         try {
@@ -88,8 +108,20 @@ class AuthController extends Controller
         return response(compact("message", "data"));
     }
 
-    public function auth_login(LoginRequest $request)
+    public function auth_login(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $credentials = $request->only('email', 'password');
         $loginField = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'dni';
         try{
@@ -115,10 +147,17 @@ class AuthController extends Controller
 
     public function auth_account_recovery(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email'
         ]);
-        
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $user = User::where('email', $request->email)->first();
 
         if(!$user)
@@ -139,10 +178,17 @@ class AuthController extends Controller
 
     public function auth_password_recovery(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required',
             'password' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         try {
             $decrypted_email = Crypt::decrypt($request->email);
@@ -171,10 +217,17 @@ class AuthController extends Controller
 
     public function auth_account_confirmation(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required',
             'password' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         try {
             $decrypted_email = Crypt::decrypt($request->email);
@@ -204,10 +257,17 @@ class AuthController extends Controller
 
     public function auth_password_recovery_token(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'old_password' => 'required',
             'password' => 'required',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         try {
             
