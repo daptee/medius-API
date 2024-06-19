@@ -50,7 +50,7 @@ class ProfessionalController extends Controller
         }
 
         $message = "Error al crear usuario profesional";
-        $data = $request->validated();
+        $data = $request->all();
 
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);

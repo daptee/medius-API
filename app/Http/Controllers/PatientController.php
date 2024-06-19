@@ -48,7 +48,7 @@ class PatientController extends Controller
         }
 
         $message = "Error al crear usuario paciente";
-        $data = $request->validated();
+        $data = $request->all();
 
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
@@ -258,11 +258,18 @@ class PatientController extends Controller
     
     public function delete_patient_files(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'ids_files' => 'required|array',
             'id_user' => 'required'
         ]);
-        
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $user_id = $request->id_user;
 
         try {

@@ -64,7 +64,7 @@ class AuthController extends Controller
         }
 
         $message = "Error al crear {$this->s} en registro";
-        $data = $request->validated();
+        $data = $request->all();
         try {
             DB::beginTransaction();
                 $new_user = new $this->model($data['user']);
