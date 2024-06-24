@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GetsFunctionsController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfessionalController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserClinicHistoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserSpecialtyController;
@@ -70,6 +71,12 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
         Route::get('clinic_history/{id}', [UserClinicHistoryController::class, 'get_clinic_history']);
         Route::post('users/patient/clinic/history', [UserClinicHistoryController::class, 'new_clinic_history_patient']);
 
+    // Turnos
+    Route::post('shifts', [ShiftController::class, 'store']);
+    Route::get('shifts', [ShiftController::class, 'index']);
+    Route::get('shifts/{id}', [ShiftController::class, 'show']);
+    Route::get('shifts/get/status', [ShiftController::class, 'get_status_shifts']);
+    Route::put('shifts/status', [ShiftController::class, 'change_status_shift']);
 });
 
 Route::controller(GetsFunctionsController::class)->group(function () {
