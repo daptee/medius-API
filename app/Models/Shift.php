@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -47,6 +48,11 @@ class Shift extends Model
     public static function getAllData($id)
     {
         return Shift::with(['patient', 'professional', 'branch_office', 'status'])->find($id);
+    }
+    
+    public function specialties_professional(): HasMany
+    {
+        return $this->hasMany(SpecialtyProfessional::class, 'id_professional', 'id_professional');
     }
     
 }

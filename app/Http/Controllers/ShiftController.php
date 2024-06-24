@@ -7,6 +7,7 @@ use App\Models\Audith;
 use App\Models\Shift;
 use App\Models\ShiftStatus;
 use App\Models\ShiftStatusHistory;
+use App\Models\UserType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,12 +18,49 @@ use Illuminate\Support\Facades\Validator;
 
 class ShiftController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $message = "Error al obtener registros";
         $data = null;
         try {
-            $data = Shift::with(['patient', 'professional', 'branch_office', 'status'])->get();
+            $query = Shift::with(['patient', 'professional', 'branch_office', 'status'])
+            ->when($request->date_from, function ($query) use ($request) {
+                return $query->where('date', '>=', $request->date_from);
+            })
+            ->when($request->date_to, function ($query) use ($request) {
+                return $query->where('date', '<=', $request->date_to);
+            })
+            ->when($request->status, function ($query) use ($request) {
+                return $query->whereIn('id_status', $request->status);
+            })
+            ->when($request->professionals, function ($query) use ($request) {
+                return $query->whereIn('id_professional', $request->professionals);
+            })
+            ->when($request->specialties != null, function ($query) use ($request) {
+                return $query->whereHas('specialties_professional', function ($q) use ($request) {
+                    $q->whereIn('id_specialty', $request->specialties);
+                    if($request->professionals)
+                        $q->whereIn('id_professional', $request->professionals);
+                });
+            })
+            ->when($request->branch_offices, function ($query) use ($request) {
+                return $query->whereIn('id_branch_office', $request->branch_offices);
+            })
+            ->when(Auth::user()->id, function ($query) use ($request) {
+                if(Auth::user()->id_user_type == UserType::PROFESIONAL){
+                    return $query->where('id_professional', Auth::user()->id);
+                }else if(Auth::user()->id_user_type == UserType::PACIENTE){
+                    return $query->where('id_patient', Auth::user()->id);
+                };
+            })
+            ->orderBy('id', 'desc');
+            
+            $total = $query->count();
+            $total_per_page = $request->total_per_page ?? 30;
+            $data  = $query->paginate($total_per_page);
+            $current_page = $request->page ?? $data->currentPage();
+            $last_page = $data->lastPage();
+
             Audith::new(Auth::user()->id, "Listado de turnos", null, 200, null);
         } catch (Exception $e) {
             Audith::new(Auth::user()->id, "Listado de turnos", null, 500, $e->getMessage());
@@ -30,7 +68,7 @@ class ShiftController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        return response(compact("data"));
+        return response(compact("data", "total", "total_per_page", "current_page", "last_page"));
     }
 
     public function show($id)

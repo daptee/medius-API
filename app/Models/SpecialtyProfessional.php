@@ -20,8 +20,8 @@ class SpecialtyProfessional extends Model
     ];
 
     protected $hidden = [
-        'id_professional',
-        'id_specialty',
+        // 'id_professional',
+        // 'id_specialty',
         'deleted_at'
     ];
 
