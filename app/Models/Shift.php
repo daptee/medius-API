@@ -25,6 +25,10 @@ class Shift extends Model
 
     protected $hidden = ['id_patient', 'id_professional', 'id_branch_office', 'id_status', 'updated_at', 'deleted_at'];
 
+    protected $casts = [
+        'overshift' => 'boolean',
+    ];
+    
     public function patient(): HasOne
     {
         return $this->hasOne(User::class, 'id', 'id_patient');
