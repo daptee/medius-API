@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ShiftCancellationMailable;
 use App\Mail\ShiftConfirmationMailable;
 use App\Models\Audith;
 use App\Models\Shift;
@@ -219,4 +220,57 @@ class ShiftController extends Controller
         return response(compact("message", "data"));
     }
 
+
+    public function mass_cancellation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shifts' => 'required',
+            'shifts.*.id_shift' => 'required|exists:shifts,id',
+            'shifts.*.notification' => 'required|boolean'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $message = "Error al realizar cancelación masiva en turnos";
+        try {
+            DB::beginTransaction();
+           
+                foreach($request->shifts as $item_shift) {
+                    $shift = Shift::with(['patient', 'professional', 'branch_office', 'status'])->find($item_shift['id_shift']);
+                    $shift->id_status = ShiftStatus::CANCELADO;
+                    $shift->save();
+
+                    $new_shift_history = new ShiftStatusHistory();
+                    $new_shift_history->id_shift = $shift->id;
+                    $new_shift_history->id_shift_status = ShiftStatus::CANCELADO;
+                    $new_shift_history->save();
+                    
+                    if($item_shift['notification'] == 1){
+                        try {
+                            Mail::to($shift->patient->email)->send(new ShiftCancellationMailable($shift, $item_shift['text']));
+                            Audith::new(Auth::user()->id, "Envio de mail a paciente en cancelación de turno.", $request->all(), 200, null);
+                        } catch (Exception $e) {
+                            Audith::new(Auth::user()->id, "Error al enviar mail a paciente en cancelación de turno.", $request->all(), 500, $e->getMessage());
+                            Log::debug(["message" => "Error al enviar mail a paciente en cancelación de turno.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+                        }
+                    }
+                }
+                
+                Audith::new(Auth::user()->id, "Cancelación masiva en turnos", $request->all(), 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Cancelación masiva en turnos", $request->all(), 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $message = "Cancelación masiva de turno exitosa";
+        return response(compact("message"));
+    }
 }

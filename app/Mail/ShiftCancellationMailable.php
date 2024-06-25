@@ -12,20 +12,21 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
-class ShiftConfirmationMailable extends Mailable
+class ShiftCancellationMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $date, $time, $clinic_name, $shift;
+    public $date, $professional_name, $clinic_name, $shift, $text;
     /**
      * Create a new message instance.
      */
-    public function __construct($shift)
+    public function __construct($shift, $text)
     {
-        $this->date = Carbon::parse($shift->date)->format('d/m/Y');
-        $this->time = $shift->time;
+        $this->professional_name = $shift->professional->name;
         $this->clinic_name = Helper::getClinicName(Auth::user()->id_user_type, Auth::user()->id);
         $this->shift = $shift;
+        $this->text = $text;
+        $this->date = Carbon::parse($shift->date)->format('d/m/Y');
     }
 
     /**
@@ -34,7 +35,7 @@ class ShiftConfirmationMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Confirmacion de turno - $this->date $this->time - $this->clinic_name",
+            subject: "Cancelación de turno - $this->professional_name - $this->clinic_name",
         );
     }
 
@@ -44,7 +45,7 @@ class ShiftConfirmationMailable extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.shift_confirmation',
+            view: 'emails.shift_cancellation',
         );
     }
 

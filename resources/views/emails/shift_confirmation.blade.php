@@ -10,7 +10,7 @@
     <p style="white-space: pre-line">
         Hola {{ $shift->patient->name }}!
 
-        Queremos avisarte que el turno que has solicitado para el dia {{ $shift->date }} a las {{ $shift->time }} se encuentra confirmado. El mismo es con el profesional {{ $shift->professional->name }} en la sucursal {{ $shift->branch_office->name }} {{ $shift->branch_office->address }}.
+        Queremos avisarte que el turno que has solicitado para el dia {{ $date }} a las {{ $shift->time }} se encuentra confirmado. El mismo es con el profesional {{ $shift->professional->name }} en la sucursal {{ $shift->branch_office->name }} {{ $shift->branch_office->address }}.
 
         Si necesitas cancelarlo o reprogramarlo, podes realizarlo a cualquiera de nuestros canales de contacto con 24hs de anticipacion.
 
