@@ -135,8 +135,7 @@ class ShiftController extends Controller
 
         if($new_shift){
             try {
-                // $data->patient->email;
-                Mail::to("enzo100amarilla@gmail.com")->send(new ShiftConfirmationMailable($data));
+                Mail::to($data->patient->email)->send(new ShiftConfirmationMailable($data));
                 Audith::new($new_shift->id, "Envio de mail de confirmacion de turno.", $request->all(), 200, null);
             } catch (Exception $e) {
                 Audith::new($new_shift->id, "Error al enviar mail de confirmacion de turno.", $request->all(), 500, $e->getMessage());
@@ -146,6 +145,50 @@ class ShiftController extends Controller
         }
 
         $message = "Registro de turno exitoso";
+        return response(compact("message", "data"));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_patient' => 'required|exists:users,id',
+            'id_professional' => 'required|exists:users,id',
+            'date' => 'required',
+            'time' => 'required',
+            'id_branch_office' => 'required|exists:branch_offices,id',
+            'overshift' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Alguna de las validaciones falló',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $shift = Shift::find($id);
+        if(!$shift)
+            return response()->json(['message' => 'Alguna de las validaciones falló', 'errors' => 'Shift ID invalido.'], 422);
+
+        $message = "Error al actualizar turno";
+        $data = $request->all();
+        try {
+            DB::beginTransaction();
+                $shift->update($data);
+                // $shift->save();
+
+                Audith::new(Auth::user()->id, "Actualización de turno", $data, 200, null);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Audith::new(Auth::user()->id, "Actualización de turno", $data, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        $data = Shift::getAllData($id);
+        $message = "Actualización de turno exitoso";
+
         return response(compact("message", "data"));
     }
 

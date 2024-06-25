@@ -11,6 +11,7 @@ use App\Models\ProfessionalSchedule;
 use App\Models\ProfessionalSpecialDate;
 use App\Models\User;
 use App\Models\UserType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -402,6 +403,31 @@ class ProfessionalController extends Controller
         $id_user = Auth::user()->id ?? null;
         try {
             $data = ProfessionalSchedule::with(['rest_hours', 'branch_office'])->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
+
+            Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function get_professional_schedules_date(Request $request, $id_professional)
+    {
+        $message = "Error al obtener listado de horarios";
+        $data = null;
+        $id_user = Auth::user()->id ?? null;
+
+        try {
+            Carbon::setLocale('es');
+            $carbonDate = Carbon::parse($request->date);
+
+            $dayName = ucfirst($carbonDate->dayName);
+
+            $data['schedules'] = ProfessionalSchedule::where('day', $dayName)->with(['rest_hours', 'branch_office'])->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
+            $data['special_dates'] = ProfessionalSpecialDate::where('date', $request->date)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
         } catch (Exception $e) {

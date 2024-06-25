@@ -52,6 +52,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/professionals', [ProfessionalController::class, 'get_professionals']);
     Route::post('users/professional/schedules', [ProfessionalController::class, 'professional_schedules']);
     Route::get('users/professional/schedules/{id_professional}', [ProfessionalController::class, 'get_professional_schedules']);
+    Route::get('users/professional/schedules/date/{id_professional}', [ProfessionalController::class, 'get_professional_schedules_date']);
     Route::get('users/professional/{id}', [ProfessionalController::class, 'get_professional']);
     Route::post('users/professional/special_dates', [ProfessionalController::class, 'professional_special_dates']);
     Route::get('users/professional/special_dates/{id_professional}', [ProfessionalController::class, 'get_professional_special_dates']);
@@ -74,6 +75,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     // Turnos
     Route::post('shifts', [ShiftController::class, 'store']);
     Route::get('shifts', [ShiftController::class, 'index']);
+    Route::put('shifts/{id}', [ShiftController::class, 'update']);
     Route::get('shifts/{id}', [ShiftController::class, 'show']);
     Route::get('shifts/get/status', [ShiftController::class, 'get_status_shifts']);
     Route::put('shifts/status', [ShiftController::class, 'change_status_shift']);
