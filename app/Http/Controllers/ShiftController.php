@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ShiftCancellationMailable;
+use App\Mail\ShiftChangeStatusMailable;
 use App\Mail\ShiftConfirmationMailable;
 use App\Models\Audith;
 use App\Models\Shift;
@@ -23,6 +24,15 @@ class ShiftController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
+
+            // ->when($request->specialties != null, function ($query) use ($request) {
+            //     return $query->whereHas('specialties_professional', function ($q) use ($request) {
+            //         $q->whereIn('id_specialty', $request->specialties);
+            //         if($request->professionals)
+            //             $q->whereIn('id_professional', $request->professionals);
+            //     });
+            // })
+            
         try {
             $query = Shift::with(['patient', 'professional', 'branch_office', 'status'])
             ->when($request->date_from, function ($query) use ($request) {
@@ -37,12 +47,8 @@ class ShiftController extends Controller
             ->when($request->professionals, function ($query) use ($request) {
                 return $query->whereIn('id_professional', $request->professionals);
             })
-            ->when($request->specialties != null, function ($query) use ($request) {
-                return $query->whereHas('specialties_professional', function ($q) use ($request) {
-                    $q->whereIn('id_specialty', $request->specialties);
-                    if($request->professionals)
-                        $q->whereIn('id_professional', $request->professionals);
-                });
+            ->when($request->specialties, function ($query) use ($request) {
+                return $query->whereIn('id_specialty', $request->specialties);
             })
             ->when($request->branch_offices, function ($query) use ($request) {
                 return $query->whereIn('id_branch_office', $request->branch_offices);
@@ -245,21 +251,18 @@ class ShiftController extends Controller
 
         $data = Shift::getAllData($shift->id);
 
-        // CHEQUEAR CON SEBA DATOS DE REPROGRAMACION DE TURNO
-        
+        // Consultar SEBA horarios o logica para reprogramado
         // if($request->id_status == ShiftStatus::CANCELADO || $request->id_status == ShiftStatus::REPROGRAMADO){
         //     try {
-        //         // $data->patient->email;
-        //         Mail::to("enzo100amarilla@gmail.com")->send(new ShiftConfirmationMailable($data));
-        //         Audith::new($new_shift->id, "Envio de mail de confirmacion de turno.", $request->all(), 200, null);
+        //         Mail::to($data->patient->email)->send(new ShiftChangeStatusMailable($data, $request->id_status));
+        //         Audith::new($shift->id, "Envio de mail para cambio de estado en turno.", $request->all(), 200, null);
         //     } catch (Exception $e) {
-        //         Audith::new($new_shift->id, "Error al enviar mail de confirmacion de turno.", $request->all(), 500, $e->getMessage());
-        //         Log::debug(["message" => "Error al enviar mail de confirmacion de turno.", "error" => $e->getMessage(), "line" => $e->getLine()]);
-        //         // Retornamos que no se pudo enviar el mail o no hace falta solo queda en el log?
+        //         Audith::new($shift->id, "Error al enviar mail para cambio de estado en turno.", $request->all(), 500, $e->getMessage());
+        //         Log::debug(["message" => "Error al enviar mail para cambio de estado en turno.", "error" => $e->getMessage(), "line" => $e->getLine()]);
         //     }
         // }
 
-        $message = "Registro de turno exitoso";
+        $message = "Actualización de turno exitoso";
         return response(compact("message", "data"));
     }
 

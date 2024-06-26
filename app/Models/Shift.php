@@ -20,7 +20,8 @@ class Shift extends Model
         'id_branch_office',
         'overshift',
         'comments',
-        'id_status'
+        'id_status',
+        'id_specialty'
     ];
 
     protected $hidden = ['id_patient', 'id_professional', 'id_branch_office', 'id_status', 'updated_at', 'deleted_at'];
@@ -47,6 +48,11 @@ class Shift extends Model
     public function status(): HasOne
     {
         return $this->hasOne(ShiftStatus::class, 'id', 'id_status');
+    }
+
+    public function specialty(): HasOne
+    {
+        return $this->hasOne(Specialty::class, 'id', 'id_specialty');
     }
 
     public static function getAllData($id)
