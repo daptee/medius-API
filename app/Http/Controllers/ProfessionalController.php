@@ -192,6 +192,7 @@ class ProfessionalController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'id_professional' => 'required',
+            'id_branch_office' => 'required|exists:branch_offices,id',
             'schedules' => 'required'
         ]);
     
@@ -220,10 +221,11 @@ class ProfessionalController extends Controller
 
         try {
             DB::beginTransaction();
-                $this->deleteSchedulesProfessional($request->id_professional);
+                $this->deleteSchedulesProfessional($request->id_professional, $request->id_branch_office);
 
                 foreach ($request->schedules as $schedule) {
                     $professional_schedule = new ProfessionalSchedule($schedule);
+                    $professional_schedule->id_branch_office = $request->id_branch_office;
                     $professional_schedule->id_professional = $request->id_professional;
                     $professional_schedule->save();
         
@@ -250,11 +252,11 @@ class ProfessionalController extends Controller
         return response(compact("message", "data"));
     }
 
-    public function deleteSchedulesProfessional($id_professional)
+    public function deleteSchedulesProfessional($id_professional, $id_branch_office)
     {
         try {
             DB::beginTransaction();
-                $professional_schedules = ProfessionalSchedule::where('id_professional', $id_professional)->get();
+                $professional_schedules = ProfessionalSchedule::where('id_professional', $id_professional)->where('id_branch_office', $id_branch_office)->get();
                 foreach ($professional_schedules as $professional_schedule) {
                     ProfessionalRestHour::where('id_professional_schedule', $professional_schedule->id)->delete();
                     $professional_schedule->delete();
@@ -426,7 +428,15 @@ class ProfessionalController extends Controller
 
             $dayName = ucfirst($carbonDate->dayName);
 
-            $data['schedules'] = ProfessionalSchedule::where('day', $dayName)->with(['rest_hours', 'branch_office'])->where('id_professional', $id_professional)->orderBy('id', 'desc')->get();
+            $query_schedules = ProfessionalSchedule::where('day', $dayName);
+            if($request->id_branch_office){
+                $query_schedules->where('id_branch_office', $request->id_branch_office);
+            }
+            $query_schedules->with(['rest_hours', 'branch_office'])
+                            ->where('id_professional', $id_professional)
+                            ->orderBy('id', 'desc');
+           
+            $data['schedules'] = $query_schedules->get();
             $data['special_dates'] = ProfessionalSpecialDate::where('date', $request->date)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 200, null);
