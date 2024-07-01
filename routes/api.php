@@ -56,6 +56,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/professional/{id}', [ProfessionalController::class, 'get_professional']);
     Route::post('users/professional/special_dates', [ProfessionalController::class, 'professional_special_dates']);
     Route::get('users/professional/special_dates/{id_professional}', [ProfessionalController::class, 'get_professional_special_dates']);
+    Route::get('professional/branch_offices', [ProfessionalController::class, 'get_professional_branch_offices']);
 
     // UserSpecialtyController
     Route::get('users/specialties', [UserSpecialtyController::class, 'get_specialties']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NewUserProfesionalRequest;
 use App\Mail\WelcomeUserMailable;
 use App\Models\Audith;
+use App\Models\BranchOffice;
 use App\Models\Professional;
 use App\Models\ProfessionalRestHour;
 use App\Models\ProfessionalSchedule;
@@ -443,6 +444,24 @@ class ProfessionalController extends Controller
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             Audith::new($id_user, "Listado de horarios", ["id_professional", $id_professional], 500, $e->getMessage());
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function get_professional_branch_offices()
+    {
+        $message = "Error al obtener listado de sucursales";
+        $data = null;
+        $id_user = Auth::user()->id ?? null;
+        try {
+            $data = BranchOffice::with(['province', 'status'])->where('id_user', $id_user)->orderBy('id', 'desc')->get();
+
+            Audith::new($id_user, "Listado de sucursales", ["id_user", $id_user], 200, null);
+        } catch (Exception $e) {
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            Audith::new($id_user, "Listado de sucursales", ["id_user", $id_user], 500, $e->getMessage());
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
