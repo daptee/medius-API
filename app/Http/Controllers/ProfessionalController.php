@@ -456,8 +456,14 @@ class ProfessionalController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = ProfessionalSchedule::with(['branch_office'])->where('id_professional', $id_user)->orderBy('id', 'desc')->get();
+            // $data = ProfessionalSchedule::with(['branch_office'])->where('id_professional', $id_user)->orderBy('id', 'desc')->groupBy('id_branch_office')->get();
+            $schedules = ProfessionalSchedule::with(['branch_office'])
+            ->where('id_professional', $id_user)
+            ->orderBy('id', 'desc')
+            ->get();
 
+            // Obtener solo las sucursales y eliminar duplicados
+            $data = $schedules->pluck('branch_office')->unique('id')->values();
             Audith::new($id_user, "Listado de sucursales", ["id_user", $id_user], 200, null);
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
