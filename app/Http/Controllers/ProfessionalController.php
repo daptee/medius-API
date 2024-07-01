@@ -456,7 +456,7 @@ class ProfessionalController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = BranchOffice::with(['province', 'status'])->where('id_user', $id_user)->orderBy('id', 'desc')->get();
+            $data = ProfessionalSchedule::with(['branch_office'])->where('id_professional', $id_user)->orderBy('id', 'desc')->get();
 
             Audith::new($id_user, "Listado de sucursales", ["id_user", $id_user], 200, null);
         } catch (Exception $e) {
