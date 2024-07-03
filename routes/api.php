@@ -80,7 +80,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('shifts/{id}', [ShiftController::class, 'show']);
     Route::get('shifts/get/status', [ShiftController::class, 'get_status_shifts']);
     Route::put('shifts/status', [ShiftController::class, 'change_status_shift']);
-    Route::put('shifts/mass_cancellation', [ShiftController::class, 'mass_cancellation']);
+    Route::put('shifts/mass/cancellation', [ShiftController::class, 'mass_cancellation']);
 });
 
 Route::controller(GetsFunctionsController::class)->group(function () {
