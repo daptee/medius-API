@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NewUserPatientRequest;
 use App\Mail\WelcomeUserMailable;
 use App\Models\Audith;
+use App\Models\ClinicHistory;
 use App\Models\Patient;
 use App\Models\PatientFile;
+use App\Models\Professional;
 use App\Models\User;
 use App\Models\UserType;
 use Illuminate\Http\Request;
@@ -164,7 +166,7 @@ class PatientController extends Controller
             $data = $this->model::with(['status'])
                     ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
                     ->where('id_user_type', UserType::PACIENTE)
-                    ->whereIn('id', $this->getIdsPatients(Auth::user()->id))
+                    ->whereIn('id', $this->getIdsPatients(Auth::user()->id_user_type, Auth::user()->id))
                     ->orderBy('id', 'desc')
                     ->get();
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
@@ -177,10 +179,18 @@ class PatientController extends Controller
         return response(compact("data"));
     }
 
-    public function getIdsPatients($id_user)
+    public function getIdsPatients($id_user_type, $id_user)
     {
+        $ids_users = [$id_user];
         $ids_patients = [];
-        $array_patient_users = Patient::select('id_patient')->where('id_user', $id_user)->get();
+        if($id_user_type == UserType::ADMIN){
+            $array_profesional_users = Professional::select('id_profesional')->where('id_user_admin', $id_user)->get();
+            foreach ($array_profesional_users as $profesional_user) {
+                $ids_users[] = $profesional_user->id_profesional;
+            }
+        }
+
+        $array_patient_users = Patient::select('id_patient')->whereIn('id_user', $ids_users)->get();
             
         if($array_patient_users->count() > 0){
             foreach($array_patient_users as $patient_user){
@@ -191,6 +201,44 @@ class PatientController extends Controller
         return $ids_patients;
     }
 
+    public function get_patients_of_professional(Request $request)
+    {
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
+            return response(["message" => "Usuario invalido"], 400);
+
+        $message = "Error al obtener registros";
+        $data = null;
+        try {
+            $data = $this->model::with(['status'])
+                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
+                    ->where('id_user_type', UserType::PACIENTE)
+                    ->whereIn('id', $this->getIdsPatientsClinicHistory(Auth::user()->id))
+                    ->orderBy('id', 'desc')
+                    ->get();
+            Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
+        } catch (Exception $e) {
+            Audith::new(Auth::user()->id, "Listado de pacientes", null, 500, $e->getMessage());
+            Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
+        }
+
+        return response(compact("data"));
+    }
+
+    public function getIdsPatientsClinicHistory($id_user)
+    {
+        $ids_patients = [];
+        $array_patient_users = ClinicHistory::select('id_patient')->where('id_professional', $id_user)->get();
+            
+        if($array_patient_users->count() > 0){
+            foreach($array_patient_users as $patient_user){
+                $ids_patients[] = $patient_user->id_patient;
+            };
+        }
+
+        return $ids_patients;
+    }
+    
     public function patient_files(Request $request)
     {
         $validator = Validator::make($request->all(), [
