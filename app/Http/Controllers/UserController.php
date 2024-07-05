@@ -325,7 +325,7 @@ class UserController extends Controller
 
     public function get_admin_branch_offices()
     {
-        if(Auth::user()->id_user_type != UserType::ADMIN)
+        if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al obtener sucursales";
