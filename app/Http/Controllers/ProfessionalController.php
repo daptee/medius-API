@@ -162,14 +162,12 @@ class ProfessionalController extends Controller
             ->where('id_user_type', UserType::PROFESIONAL)
             ->whereIn('id', $this->getIdsProfessionals(Auth::user()->id))
             ->when($request->branch_offices, function ($query) use ($request) {
-                $query->whereHas('user.branch_offices', function ($q) use ($request) {
-                    $q->whereIn('id', $request->branch_office);
+                $query->whereHas('branch_offices', function ($q) use ($request) {
+                    $q->whereIn('id', $request->branch_offices);
                 });
             })
             ->when($request->id_status, function ($query) use ($request) {
-                $query->whereHas('user', function ($q) use ($request) {
-                    $q->where('id_user_status', $request->id_status);
-                });
+                return $query->where('id_user_status', $request->id_status);
             })
             ->orderBy('id', 'desc');
 
