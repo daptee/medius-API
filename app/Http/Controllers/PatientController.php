@@ -154,7 +154,7 @@ class PatientController extends Controller
         return response(compact("message", "data"));
     }
 
-    public function get_patients()
+    public function get_patients(Request $request)
     {
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
@@ -163,12 +163,28 @@ class PatientController extends Controller
         $data = null;
         try {
             // $data = $this->model::where('id_user_type', UserType::PACIENTE)->with($this->model::DATA_WITH)->get();
-            $data = $this->model::with(['status'])
-                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
-                    ->where('id_user_type', UserType::PACIENTE)
-                    ->whereIn('id', $this->getIdsPatients(Auth::user()->id_user_type, Auth::user()->id))
-                    ->orderBy('id', 'desc')
-                    ->get();
+            $query = $this->model::with(['status'])
+            ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
+            ->where('id_user_type', UserType::PACIENTE)
+            ->whereIn('id', $this->getIdsPatients(Auth::user()->id_user_type, Auth::user()->id))
+            ->when($request->branch_offices, function ($query) use ($request) {
+                $query->whereHas('user.branch_offices', function ($q) use ($request) {
+                    $q->whereIn('id', $request->branch_office);
+                });
+            })
+            ->when($request->id_status, function ($query) use ($request) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('id_user_status', $request->id_status);
+                });
+            })
+            ->orderBy('id', 'desc');
+            
+            $total = $query->count();
+            $total_per_page = $request->total_per_page ?? 30;
+            $data  = $query->paginate($total_per_page);
+            $current_page = $request->page ?? $data->currentPage();
+            $last_page = $data->lastPage();
+
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
         } catch (Exception $e) {
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 500, $e->getMessage());
@@ -176,7 +192,7 @@ class PatientController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        return response(compact("data"));
+        return response(compact("data", "total", "total_per_page", "current_page", "last_page"));
     }
 
     public function getIdsPatients($id_user_type, $id_user)
@@ -209,12 +225,29 @@ class PatientController extends Controller
         $message = "Error al obtener registros";
         $data = null;
         try {
-            $data = $this->model::with(['status'])
-                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
-                    ->where('id_user_type', UserType::PACIENTE)
-                    ->whereIn('id', $this->getIdsPatientsClinicHistory(Auth::user()->id))
-                    ->orderBy('id', 'desc')
-                    ->get();
+            $query = $this->model::with(['status'])
+            ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
+            ->where('id_user_type', UserType::PACIENTE)
+            ->whereIn('id', $this->getIdsPatientsClinicHistory(Auth::user()->id))
+            ->when($request->branch_offices, function ($query) use ($request) {
+                $query->whereHas('user.branch_offices', function ($q) use ($request) {
+                    $q->whereIn('id', $request->branch_office);
+                });
+            })
+            ->when($request->id_status, function ($query) use ($request) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('id_user_status', $request->id_status);
+                });
+            })
+            ->orderBy('id', 'desc');
+            
+            $total = $query->count();
+            $total_per_page = $request->total_per_page ?? 30;
+            $data  = $query->paginate($total_per_page);
+            $current_page = $request->page ?? $data->currentPage();
+            $last_page = $data->lastPage();
+
+
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 200, null);
         } catch (Exception $e) {
             Audith::new(Auth::user()->id, "Listado de pacientes", null, 500, $e->getMessage());
@@ -222,7 +255,7 @@ class PatientController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        return response(compact("data"));
+        return response(compact("data", "total", "total_per_page", "current_page", "last_page"));
     }
 
     public function getIdsPatientsClinicHistory($id_user)

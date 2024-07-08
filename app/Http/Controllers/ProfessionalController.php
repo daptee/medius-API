@@ -148,7 +148,7 @@ class ProfessionalController extends Controller
         return response(compact("message", "data"));
     }
 
-    public function get_professionals()
+    public function get_professionals(Request $request)
     {
         if(Auth::user()->id_user_type != UserType::ADMIN)
             return response(["message" => "Usuario invalido"], 400);
@@ -157,12 +157,27 @@ class ProfessionalController extends Controller
         $data = null;
         
         try {
-            $data = $this->model::with(['status'])
-                    ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
-                    ->where('id_user_type', UserType::PROFESIONAL)
-                    ->whereIn('id', $this->getIdsProfessionals(Auth::user()->id))
-                    ->orderBy('id', 'desc')
-                    ->get();
+            $query = $this->model::with(['status'])
+            ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
+            ->where('id_user_type', UserType::PROFESIONAL)
+            ->whereIn('id', $this->getIdsProfessionals(Auth::user()->id))
+            ->when($request->branch_offices, function ($query) use ($request) {
+                $query->whereHas('user.branch_offices', function ($q) use ($request) {
+                    $q->whereIn('id', $request->branch_office);
+                });
+            })
+            ->when($request->id_status, function ($query) use ($request) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('id_user_status', $request->id_status);
+                });
+            })
+            ->orderBy('id', 'desc');
+
+            $total = $query->count();
+            $total_per_page = $request->total_per_page ?? 30;
+            $data  = $query->paginate($total_per_page);
+            $current_page = $request->page ?? $data->currentPage();
+            $last_page = $data->lastPage();
 
             // $data = $this->model::where('id_user_type', UserType::PROFESIONAL)->with($this->model::DATA_WITH)->get();
             Audith::new(Auth::user()->id, "Listado de profesionales", null, 200, null);
@@ -172,7 +187,7 @@ class ProfessionalController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
-        return response(compact("data"));
+        return response(compact("data", "total", "total_per_page", "current_page", "last_page"));
     }
 
     public function getIdsProfessionals($id_admin)
