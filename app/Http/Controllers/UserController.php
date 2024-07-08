@@ -6,6 +6,7 @@ use App\Http\Requests\NewUserProfesionalRequest;
 use App\Models\Audith;
 use App\Models\BranchOffice;
 use App\Models\Company;
+use App\Models\Professional;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserPlan;
@@ -329,11 +330,18 @@ class UserController extends Controller
             return response(["message" => "Usuario invalido"], 400);
 
         $message = "Error al obtener sucursales";
-    
+
+        if(Auth::user()->id_user_type != UserType::ADMIN){
+            $admin_professional = Professional::where('id_profesional', Auth::user()->id)->first();
+            $id_user = $admin_professional->id_user_admin ?? null;
+        }else{
+            $id_user = Auth::user()->id;
+        }
+
         try {
             DB::beginTransaction();
                 $data = BranchOffice::with(['province.country', 'status'])
-                        ->where('id_user', Auth::user()->id)
+                        ->where('id_user', $id_user)
                         ->orderBy('id', 'desc')
                         ->get();
 
