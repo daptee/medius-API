@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Audith;
+use App\Models\Helper;
 use App\Models\Professional;
 use App\Models\ProfessionalRestHour;
 use App\Models\Specialty;
@@ -22,19 +23,6 @@ class UserSpecialtyController extends Controller
 {
     public function get_specialties(Request $request)
     {
-        // if(Auth::user()->id_user_type != UserType::ADMIN)
-            // return response(["message" => "Usuario invalido"], 400);
-
-        if(Auth::user()->id_user_type != UserType::ADMIN){
-            $admin_professional = Professional::where('id_profesional', Auth::user()->id)->first();
-            $id_user = $admin_professional->id_user_admin ?? null;
-        }else{
-            $id_user = Auth::user()->id;
-        }
-
-        if(is_null($id_user))
-            return response(["message" => "Error al obtener admin creador de profesional"], 400);
-        
         // si es admin logica y sino tmb, buscar admin
         $message = "Error al obtener listado de especiales asociadas al usuario";
         $data = null;
@@ -43,7 +31,7 @@ class UserSpecialtyController extends Controller
                     ->when($request->id_status, function ($query) use ($request) {
                         return $query->where('id_status', $request->id_status);
                     })
-                    ->where('id_user', $id_user)
+                    ->where('id_user', Helper::get_admin_of_user(Auth::user()->id_user_type, Auth::user()->id))
                     ->orderBy('id', 'desc')
                     ->get();
 

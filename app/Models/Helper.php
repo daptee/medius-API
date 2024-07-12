@@ -44,4 +44,32 @@ class Helper extends Model
                 break;
         }
     }
+
+    public static function get_admin_of_user($id_user_type, $id_user)
+    {
+        switch ($id_user_type) {
+            case UserType::ADMIN:
+                return $id_user;
+                break;
+
+            case UserType::PROFESIONAL:
+                $admin_professional = Professional::where('id_profesional', $id_user)->first();
+                return $admin_professional->id_user_admin;
+                break;
+
+            case UserType::PACIENTE:
+                $patient = Patient::with('user')->where('id_patient', $id_user)->first();
+                if($patient->user->id_user_type == UserType::ADMIN){
+                    return $patient->user->id;
+                }else{
+                    $admin_professional = Professional::where('id_profesional', $id_user)->first();
+                    return $admin_professional->id_user_admin;
+                }
+                break;
+            
+            default:
+                return null;
+                break;
+        }
+    }
 }
