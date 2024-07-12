@@ -463,20 +463,35 @@ class ProfessionalController extends Controller
         return response(compact("data"));
     }
 
-    public function get_professional_branch_offices()
+    public function get_professional_branch_offices(Request $request)
     {
         $message = "Error al obtener listado de sucursales";
         $data = null;
         $id_user = Auth::user()->id ?? null;
-        try {
-            // $data = ProfessionalSchedule::with(['branch_office'])->where('id_professional', $id_user)->orderBy('id', 'desc')->groupBy('id_branch_office')->get();
-            $schedules = ProfessionalSchedule::with(['branch_office'])
-            ->where('id_professional', $id_user)
-            ->orderBy('id', 'desc')
-            ->get();
 
-            // Obtener solo las sucursales y eliminar duplicados
-            $data = $schedules->pluck('branch_office')->unique('id')->values();
+        if(Auth::user()->id_user_type != UserType::ADMIN){
+            $admin_professional = Professional::where('id_profesional', Auth::user()->id)->first();
+            $id_user = $admin_professional->id_user_admin ?? null;
+        }else{
+            $id_user = Auth::user()->id;
+        }
+
+        try {
+            $data = BranchOffice::with(['province.country', 'status'])
+                    ->when($request->id_status, function ($query) use ($request) {
+                        return $query->where('id_status', $request->id_status);
+                    })
+                    ->where('id_user', $id_user)
+                    ->orderBy('id', 'desc')
+                    ->get();
+            // $data = ProfessionalSchedule::with(['branch_office'])->where('id_professional', $id_user)->orderBy('id', 'desc')->groupBy('id_branch_office')->get();
+            // $schedules = ProfessionalSchedule::with(['branch_office'])
+            // ->where('id_professional', $id_user)
+            // ->orderBy('id', 'desc')
+            // ->get();
+
+            // // Obtener solo las sucursales y eliminar duplicados
+            // $data = $schedules->pluck('branch_office')->unique('id')->values();
             Audith::new($id_user, "Listado de sucursales", ["id_user", $id_user], 200, null);
         } catch (Exception $e) {
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
