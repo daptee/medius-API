@@ -166,6 +166,9 @@ class ProfessionalController extends Controller
                     $q->whereIn('id', $request->branch_offices);
                 });
             })
+            ->when($request->id_specialty, function ($query) use ($request) {
+                $query->whereRaw('JSON_CONTAINS(data->"$.specialty", JSON_OBJECT("specialty_id", ?))', [$request->id_specialty]);
+            })
             ->when($request->id_status, function ($query) use ($request) {
                 return $query->where('id_user_status', $request->id_status);
             })
