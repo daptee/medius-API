@@ -6,6 +6,7 @@ use App\Mail\ShiftCancellationMailable;
 use App\Mail\ShiftChangeStatusMailable;
 use App\Mail\ShiftConfirmationMailable;
 use App\Models\Audith;
+use App\Models\Professional;
 use App\Models\Shift;
 use App\Models\ShiftStatus;
 use App\Models\ShiftStatusHistory;
@@ -54,10 +55,13 @@ class ShiftController extends Controller
                 return $query->whereIn('id_branch_office', $request->branch_offices);
             })
             ->when(Auth::user()->id, function ($query) use ($request) {
+
                 if(Auth::user()->id_user_type == UserType::PROFESIONAL){
                     return $query->where('id_professional', Auth::user()->id);
                 }else if(Auth::user()->id_user_type == UserType::PACIENTE){
                     return $query->where('id_patient', Auth::user()->id);
+                }else if(Auth::user()->id_user_type == UserType::ADMIN){
+                    return $query->whereIn('id_professional', $this->getIdsProfessionals(Auth::user()->id));
                 };
             })
             ->orderBy('id', 'desc');
@@ -76,6 +80,20 @@ class ShiftController extends Controller
         }
 
         return response(compact("data", "total", "total_per_page", "current_page", "last_page"));
+    }
+
+    public function getIdsProfessionals($id_admin)
+    {
+        $ids_professionals = [];
+        $array_professional_users = Professional::select('id_profesional')->where('id_user_admin', $id_admin)->get();
+            
+        if($array_professional_users->count() > 0){
+            foreach($array_professional_users as $professional_user){
+                $ids_professionals[] = $professional_user->id_profesional;
+            };
+        }
+
+        return $ids_professionals;
     }
 
     public function show($id)

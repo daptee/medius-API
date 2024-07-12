@@ -36,6 +36,7 @@ Route::group(['middleware' => ['auth:api']], function ($router) {
     Route::get('users/admin/branch_offices', [UserController::class, 'get_admin_branch_offices']);
     Route::post('users/admin/branch_office', [UserController::class, 'new_admin_branch_office']);
     Route::put('users/admin/branch_office/{id}', [UserController::class, 'update_admin_branch_office']);
+    Route::post('users/token', [UserController::class, 'user_token']);
     
     // PatientController
     Route::post('users/patient', [PatientController::class, 'new_user_patient']);

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserSpecialtyController extends Controller
 {
-    public function get_specialties()
+    public function get_specialties(Request $request)
     {
         // if(Auth::user()->id_user_type != UserType::ADMIN)
             // return response(["message" => "Usuario invalido"], 400);
@@ -39,7 +39,13 @@ class UserSpecialtyController extends Controller
         $message = "Error al obtener listado de especiales asociadas al usuario";
         $data = null;
         try {
-            $data = SpecialtyAdmin::with(['specialty', 'status'])->where('id_user', $id_user)->orderBy('id', 'desc')->get();
+            $data = SpecialtyAdmin::with(['specialty', 'status'])
+                    ->when($request->id_status, function ($query) use ($request) {
+                        return $query->where('id_status', $request->id_status);
+                    })
+                    ->where('id_user', $id_user)
+                    ->orderBy('id', 'desc')
+                    ->get();
 
             Audith::new(Auth::user()->id, "Listado de especiales asociadas al usuario", null, 200, null);
         } catch (Exception $e) {

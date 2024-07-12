@@ -29,6 +29,35 @@ class UserController extends Controller
     public $pr = "el"; 
     public $prp = "los";
 
+    public function user_token(Request $request)
+    {
+        try{
+            $user = auth()->user();
+
+            if (! $user) {
+                return response()->json(['message' => 'Usuario no autenticado.'], 401);
+            }
+            
+            $token = auth()->login($user);
+
+            Audith::new(Auth::user()->id, "Get nuevo token para usuario", Auth::user()->email, 200, null);
+
+        }catch (Exception $e) {
+            Audith::new(Auth::user()->id, "Get nuevo token para usuario", Auth::user()->email, 500, $e->getMessage());
+            Log::debug(["message" => "No fue posible crear nuevo Token.", "error" => $e->getMessage(), "line" => $e->getLine()]);
+            return response()->json(['message' => 'No fue posible crear nuevo Token.'], 500);
+        }
+    
+        $data = [ 
+            'access_token' => $token,
+        ];
+
+        return response()->json([
+            'message' => 'Nuevo token generado.',
+            'data' => $data
+        ]);
+    }
+
     public function update(Request $request)
     {
         $id = Auth::user()->id;
@@ -324,7 +353,7 @@ class UserController extends Controller
         return response(compact("message", "data"));
     }
 
-    public function get_admin_branch_offices()
+    public function get_admin_branch_offices(Request $request)
     {
         if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             return response(["message" => "Usuario invalido"], 400);
@@ -341,6 +370,9 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
                 $data = BranchOffice::with(['province.country', 'status'])
+                        ->when($request->id_status, function ($query) use ($request) {
+                            return $query->where('id_status', $request->id_status);
+                        })
                         ->where('id_user', $id_user)
                         ->orderBy('id', 'desc')
                         ->get();
@@ -377,13 +409,14 @@ class UserController extends Controller
             Log::debug(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
-
+        
+        $message = "Sucursal cargada exitosamente";
         $data = BranchOffice::with(['province.country', 'status'])
                 ->where('id_user', Auth::user()->id)
                 ->orderBy('id', 'desc')
                 ->get();
 
-        return response(compact("data"));
+        return response(compact("message", "data"));
     }
 
     public function update_admin_branch_office(Request $request, $id)
@@ -412,12 +445,13 @@ class UserController extends Controller
             return response(["message" => $message, "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
 
+        $message = "Sucursal actualizada exitosamente";
         $data = BranchOffice::with(['province.country', 'status'])
                 ->where('id_user', Auth::user()->id)
                 ->orderBy('id', 'desc')
                 ->get();
 
-        return response(compact("data"));
+        return response(compact("message", "data"));
     }
 
     // public function update_admin_company(Request $request)

@@ -28,7 +28,7 @@ class RecoverPasswordMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Recuperación de contraseña - Medius',
+            subject: 'Recuperación de contraseña - ' . config('services.clinic_name'),
         );
     }
 

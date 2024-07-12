@@ -207,7 +207,7 @@ class AuthController extends Controller
             DB::commit();
         } catch (DecryptException $e) {
             DB::rollBack();
-            Audith::new($user->id, "Cambio de contraseña", $request->email, 500, $e->getMessage());
+            Audith::new(null, "Cambio de contraseña", $request->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al realizar el decrypt / actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => "Error en recupero de contraseña", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -247,7 +247,7 @@ class AuthController extends Controller
             DB::commit();
         } catch (DecryptException $e) {
             DB::rollBack();
-            Audith::new($user->id, "Confirmación de cuenta", $request->email, 500, $e->getMessage());
+            Audith::new(null, "Confirmación de cuenta", $request->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al realizar confirmación de cuenta.", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => "Error al realizar confirmación de cuenta", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
@@ -285,7 +285,7 @@ class AuthController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Audith::new($user->id, "Cambio de contraseña", $user->email, 500, $e->getMessage());
+            Audith::new(null, "Cambio de contraseña", $user->email, 500, $e->getMessage());
             Log::debug(["message" => "Error al actualizar contraseña.", "error" => $e->getMessage(), "line" => $e->getLine()]);
             return response(["message" => "Error al actualizar contraseña", "error" => $e->getMessage(), "line" => $e->getLine()], 500);
         }
