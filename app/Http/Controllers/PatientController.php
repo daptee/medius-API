@@ -228,8 +228,8 @@ class PatientController extends Controller
             ->where('id_user_type', UserType::PACIENTE)
             ->whereIn('id', $this->getIdsPatientsClinicHistory(Auth::user()->id))
             ->when($request->branch_offices, function ($query) use ($request) {
-                $query->whereHas('branch_offices', function ($q) use ($request) {
-                    $q->whereIn('id', $request->branch_offices);
+                $query->whereHas('patients.user.schedules', function ($q) use ($request) {
+                    $q->whereIn('id_branch_office', $request->branch_offices);
                 });
             })
             ->when($request->id_status, function ($query) use ($request) {

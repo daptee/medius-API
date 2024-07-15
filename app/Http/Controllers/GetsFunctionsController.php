@@ -21,7 +21,7 @@ class GetsFunctionsController extends Controller
         $data = null;
         $id_user = Auth::user()->id ?? null;
         try {
-            $data = Country::with('provinces')->get();
+            $data = Country::with('provinces')->where('status', 1)->get();
 
             Audith::new($id_user, "Listado de países", null, 200, null);
         } catch (Exception $e) {

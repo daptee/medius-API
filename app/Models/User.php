@@ -105,6 +105,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(PatientFile::class, 'id_patient');
     }
+    
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Patient::class, 'id_patient');
+    }
 
     public function specialties(): HasMany
     {
