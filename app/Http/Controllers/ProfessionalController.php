@@ -155,22 +155,23 @@ class ProfessionalController extends Controller
 
         $message = "Error al obtener registros";
         $data = null;
-        
+        $id_specialty = $request->id_specialty;
+
         try {
             $query = $this->model::with(['status'])
             ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
             ->where('id_user_type', UserType::PROFESIONAL)
             ->whereIn('id', $this->getIdsProfessionals(Auth::user()->id))
             ->when($request->branch_offices, function ($query) use ($request) {
-                $query->whereHas('branch_offices', function ($q) use ($request) {
-                    $q->whereIn('id', $request->branch_offices);
+                $query->whereHas('schedules', function ($q) use ($request) {
+                    $q->whereIn('id_branch_office', $request->branch_offices);
                 });
-            })
-            ->when($request->id_specialty, function ($query) use ($request) {
-                $query->whereRaw('JSON_CONTAINS(data->"$.specialty", JSON_OBJECT("specialty_id", ?))', [$request->id_specialty]);
             })
             ->when($request->id_status, function ($query) use ($request) {
                 return $query->where('id_user_status', $request->id_status);
+            })
+            ->when($id_specialty, function ($query) use ($id_specialty) {
+                $query->whereRaw('JSON_SEARCH(data, "one", CAST(? AS CHAR), null, "$.specialty[*].specialty_id") IS NOT NULL', [$id_specialty]);
             })
             ->orderBy('id', 'desc');
 
