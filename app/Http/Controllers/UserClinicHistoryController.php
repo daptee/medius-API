@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 
 class UserClinicHistoryController extends Controller
 {
-    public function get_clinic_history_patient($id)
+    public function get_clinic_history_patient(Request $request, $id)
     {
         // if(Auth::user()->id_user_type != UserType::ADMIN && Auth::user()->id_user_type != UserType::PROFESIONAL)
             // return response(["message" => "Usuario invalido"], 400);
@@ -36,16 +36,45 @@ class UserClinicHistoryController extends Controller
     
         $message = "Error al obtener historia clinica de paciente";
         $data = null;
+        $id_specialty = $request->id_specialty;
+        $has_files = $request->has_files;
+
         try {
             // especialties por data
             $data = ClinicHistory::with(['professional:id,name,last_name,profile_picture,data'])
                     ->where('id_patient', $id)
+                    ->when($request->id_professional, function ($query) use ($request) {
+                        return $query->where('id_professional', $request->id_professional);
+                    })
+                    ->when($id_specialty, function ($query) use ($id_specialty) {
+                        $query->whereHas('professional', function ($query) use ($id_specialty) {
+                            $query->whereRaw('JSON_SEARCH(data, "one", CAST(? AS CHAR), null, "$.specialty[*].specialty_id") IS NOT NULL', [$id_specialty]);
+                        });
+                    })
+                    ->when($request->branch_offices, function ($query) use ($request) {
+                        $query->whereHas('professional.schedules', function ($q) use ($request) {
+                            $q->whereIn('id_branch_office', $request->branch_offices);
+                        });
+                    })
                     ->orderBy('id', 'desc')
                     ->get();
             
-            foreach ($data as $item) {
-                $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
-                $item['has_files'] = $count > 0 ? true : false;
+            // foreach ($data as $item) {
+            //     $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
+            //     $item['has_files'] = $count > 0 ? true : false;
+            // }
+
+            if (!is_null($has_files)) {
+                $data = $data->filter(function ($item) use ($has_files) {
+                    $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
+                    $item->has_files = $count > 0 ? true : false;
+                    return $has_files ? $item->has_files : !$item->has_files;
+                })->values(); // Reset keys after filtering
+            } else {
+                foreach ($data as $item) {
+                    $count = ClinicHistoryFile::where("id_clinic_history", $item->id)->count();
+                    $item->has_files = $count > 0 ? true : false;
+                }
             }
 
             Audith::new(Auth::user()->id, "Get historia clinica de paciente", ['id_patient' => $id], 200, null);
