@@ -98,7 +98,7 @@ Route::controller(GetsFunctionsController::class)->group(function () {
 
 Route::get('test-mail', function() {
     try {
-        $text = "Test de envio de mail Medius";
+        $text = "Test de envio de mail Medius.";
         Mail::to("enzo100amarilla@gmail.com")->send(new TestMail("enzo100amarilla@gmail.com", $text));
         return 'Mail enviado';
     } catch (\Throwable $th) {
