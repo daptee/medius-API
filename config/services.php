@@ -15,8 +15,8 @@ return [
     */
 
     'url_front' => env('URL_FRONT'),
-
     'clinic_name' => env('CLINIC_NAME'),
+    'clinic_contact_email' => env('CLINIC_CONTACT_EMAIL'),
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

@@ -12,11 +12,16 @@
 
         Nos complace saludarte y darte la bienvenida al sistema {{ config('services.clinic_name') }}.
 
+        Los datos para ingresar al sistema son:
+
+        Usuario: {{ $user->email }}
+        Password: {{ $password }}
+
         Por favor, para confirmar tu cuenta te pedimos ingreses al siguiente link:
 
         {{ config('services.url_front') }}/confirmacion-cuenta/{{ Crypt::encrypt($user->email) }}
 
-        Ante cualquier duda podes escribirnos a ayuda@medius.com
+        Ante cualquier duda podes escribirnos a {{ config('services.clinic_contact_email') }}
         Muchas gracias!
     </p>
 </body>
