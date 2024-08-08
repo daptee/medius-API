@@ -23,7 +23,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+        
         try {
             $data = Country::with('provinces')->where('status', 1)->get();
 
@@ -41,7 +45,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+
         try {
             $data = Province::with('country')->get();
 
@@ -59,7 +67,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+        
         try {
             $data = Specialty::orderBy('name', 'asc')->get();
 
@@ -77,7 +89,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+        
         try {
             $data = UserStatus::get();
 
@@ -95,7 +111,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = null;
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+        
         try {
             $data = SocialWork::orderBy('name', 'asc')->get();
             Audith::new($id_user, "Listado de obras sociales", null, 200, null);
@@ -148,7 +168,11 @@ class GetsFunctionsController extends Controller
     {
         $message = "Error al obtener registros";
         $data = [];
-        $id_user = Auth::user()->id ?? null;
+        $id_user = null;
+        
+        if(isset(Auth::user()->id))
+            $id_user = Auth::user()->id;
+        
         try {
             $patients = User::with(['status'])
                         ->select(['id', 'name', 'last_name','dni', 'email', 'id_user_status', 'data', 'profile_picture', 'created_at'])
